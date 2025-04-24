@@ -3,8 +3,11 @@
 import { signInWithGoogle } from "@/app/signin/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSearchParams } from "next/navigation";
 
 export default function SignIn() {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
   return (
     <div className="flex items-center justify-center min-h-[70vh]">
       <Card className="w-full max-w-md bg-background">
@@ -16,7 +19,7 @@ export default function SignIn() {
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <form
-            action={signInWithGoogle}
+            action={() => signInWithGoogle(callbackUrl)}
             className="w-full"
           >
             <Button 

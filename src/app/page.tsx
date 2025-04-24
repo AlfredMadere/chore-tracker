@@ -21,7 +21,7 @@ export default async function Home() {
     if (!session) {
       return redirect("/signin");
     }
-    return redirect("/join");
+    return redirect("/group/join");
   }
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-black">
@@ -41,7 +41,7 @@ export default async function Home() {
             <form action={handleCreateGroup}>
               <Button 
                 type="submit"
-                className="rounded-full bg-black dark:bg-white text-white dark:text-black px-6 py-3 font-medium text-base hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors inline-flex items-center justify-center"
+                className="cursor-pointer rounded-full bg-black dark:bg-white text-white dark:text-black px-6 py-3 font-medium text-base hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors inline-flex items-center justify-center"
               >
                 Create a Group
               </Button>

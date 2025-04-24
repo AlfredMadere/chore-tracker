@@ -73,7 +73,7 @@ export default function GroupPage() {
       return;
     }
     
-    const inviteLink = `${window.location.origin}/join?code=${sharingId}`;
+    const inviteLink = `${window.location.origin}/group/join/${sharingId}`;
     navigator.clipboard.writeText(inviteLink)
       .then(() => {
         setCopySuccess(true);

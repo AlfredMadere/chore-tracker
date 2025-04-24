@@ -2,6 +2,6 @@
 
 import { signIn } from "@/auth";
 
-export async function signInWithGoogle() {
-  return signIn("google", { redirectTo: "/" });
+export async function signInWithGoogle(callbackUrl?: string) {
+  return signIn("google", { redirectTo: callbackUrl || "/" });
 }
