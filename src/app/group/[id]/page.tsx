@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getGroupById, updateGroupName, getPointsPerUser } from "./actions";
 import { useParams } from "next/navigation";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { getGroupById, updateGroupName, getPointsPerUser } from "./actions";
 import ChorePointsChart from "@/components/ChorePointsChart";
 import ChoreLogList from "@/components/ChoreLogList";
 
@@ -10,46 +11,57 @@ export default function GroupPage() {
   const params = useParams();
   const groupId = params.id as string;
   
-  const [group, setGroup] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState("");
   const [copySuccess, setCopySuccess] = useState(false);
+  const [error, setError] = useState("");
   
-  // Fetch group data
-  useEffect(() => {
-    async function fetchGroup() {
-      setLoading(true);
+  // Use React Query to fetch group data
+  const { 
+    data: group, 
+    isLoading,
+    error: queryError,
+    refetch
+  } = useQuery({
+    queryKey: ["group", groupId],
+    queryFn: async () => {
       const result = await getGroupById(groupId);
-      
-      if (result.success) {
-        setGroup(result.data);
-        setEditedName(result.data?.name || "");
-        setError("");
-      } else {
-        setError(result.error || "Failed to load group");
+      if (!result.success) {
+        throw new Error(result.error || "Failed to load group");
       }
-      
-      setLoading(false);
+      return result.data;
     }
-    
-    fetchGroup();
-  }, [groupId]);
+  });
+  
+  // Set edited name when group data is available
+  useEffect(() => {
+    if (group) {
+      setEditedName(group.name || "");
+    }
+  }, [group]);
+  
+  // Use React Query mutation for updating group name
+  const updateGroupMutation = useMutation({
+    mutationFn: async ({ id, name }: { id: string, name: string }) => {
+      const result = await updateGroupName(id, name);
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update group name");
+      }
+      return result.data;
+    },
+    onSuccess: () => {
+      setIsEditing(false);
+      refetch(); // Refresh group data
+    },
+    onError: (err: any) => {
+      setError(err.message || "Failed to update group name");
+    }
+  });
   
   // Handle name edit
-  const handleNameEdit = async () => {
+  const handleNameEdit = () => {
     if (!editedName.trim()) return;
-    
-    const result = await updateGroupName(groupId, editedName);
-    
-    if (result.success) {
-      setGroup(prev => ({ ...prev, name: editedName }));
-      setIsEditing(false);
-    } else {
-      setError(result.error || "Failed to update group name");
-    }
+    updateGroupMutation.mutate({ id: groupId, name: editedName });
   };
   
   // Copy invite link to clipboard
@@ -73,7 +85,7 @@ export default function GroupPage() {
       });
   };
   
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -174,7 +186,7 @@ export default function GroupPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
           <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Members</h3>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{group.users.length}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{group.userGroups?.length || 0}</p>
         </div>
       </div>
       
@@ -185,7 +197,7 @@ export default function GroupPage() {
       
       {/* Recent Chore Activity */}
       <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-        <ChoreLogList choreLogs={group.ChoreLog} maxHeight="400px" />
+        <ChoreLogList choreLogs={group.ChoreLog || []} maxHeight="400px" />
       </div>
     </div>
   );

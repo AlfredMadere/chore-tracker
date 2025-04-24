@@ -1,8 +1,15 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { auth } from "@/auth";
 
 export async function createGroup(name: string) {
+  const session = await auth();
+  
+  if (!session?.user?.id) {
+    return { success: false, error: "Not authenticated", data: null };
+  }
+  
   try {
     if (!name || name.trim() === "") {
       throw new Error("Group name is required");
@@ -10,7 +17,12 @@ export async function createGroup(name: string) {
     
     const group = await prisma.group.create({
       data: {
-        name: name.trim()
+        name: name.trim(),
+        userGroups: {
+          create: {
+            userId: session.user.id
+          }
+        }
       }
     });
     

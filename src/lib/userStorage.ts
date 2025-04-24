@@ -1,21 +1,23 @@
 // Simple user storage utility using localStorage
 // This is a simplified approach without proper authentication
+import { User } from "@/generated/prisma";
 
-type User = {
-  id: number;
+// Define a simplified user type for storage
+export type StoredUser = {
+  id: string;
   email: string;
-  name?: string;
+  name?: string | null;
 };
 
 const USER_STORAGE_KEY = 'chore-tracker-user';
 
-export function saveUserToStorage(user: User): void {
+export function saveUserToStorage(user: StoredUser): void {
   if (typeof window !== 'undefined') {
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
   }
 }
 
-export function getUserFromStorage(): User | null {
+export function getUserFromStorage(): StoredUser | null {
   if (typeof window !== 'undefined') {
     const userJson = localStorage.getItem(USER_STORAGE_KEY);
     if (userJson) {

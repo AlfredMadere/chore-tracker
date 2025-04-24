@@ -14,19 +14,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id       Int        @id @default(autoincrement())
-  email    String     @unique
-  name     String?
-  groups Group[]
-  ChoreLog ChoreLog[]
-}
-
 model Group {
-  id        Int        @id @default(autoincrement())
+  id        Int            @id @default(autoincrement())
   name      String
-  sharingId String     @unique @default(dbgenerated("gen_random_uuid()"))
-  users     User[]
+  sharingId String         @unique @default(dbgenerated("gen_random_uuid()"))
+  userGroups     UserToGroups[]
   Chore     Chore[]
   ChoreLog  ChoreLog[]
 }
@@ -47,8 +39,89 @@ model ChoreLog {
   group     Group    @relation(fields: [groupId], references: [id])
   createdAt DateTime @default(now())
   choreId   Int
-  userId    Int
+  userId    String
   groupId   Int
 }
 
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  // Optional for WebAuthn support
+  Authenticator Authenticator[]
 
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  userGroups    UserToGroups[]
+  ChoreLog  ChoreLog[]
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// Optional for WebAuthn support
+model Authenticator {
+  credentialID         String  @unique
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, credentialID])
+}
+
+model UserToGroups {
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   Int
+  joinedAt  DateTime @default(now())
+  isAdmin   Boolean  @default(false)
+
+  @@id([userId, groupId])
+}

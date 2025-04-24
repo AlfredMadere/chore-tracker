@@ -16,7 +16,11 @@ export async function GET(
     const group = await prisma.group.findUnique({
       where: { id: groupId },
       include: {
-        users: true,
+        userGroups: {
+          include: {
+            user: true
+          }
+        },
         Chore: true,
         ChoreLog: {
           include: {

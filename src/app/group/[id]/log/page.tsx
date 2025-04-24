@@ -2,19 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { getChoresForGroup, logChore } from "./actions";
-import { getUserFromStorage } from "@/lib/userStorage";
+import { Chore as PrismaChore } from "@/generated/prisma";
 
-type Chore = {
-  id: number;
-  name: string;
-  points: number;
-  groupId: number;
-};
+// Use a type that matches what we get from the server
+type Chore = Pick<PrismaChore, 'id' | 'name' | 'points' | 'groupId'>;
 
 export default function ChoreLogPage() {
   const params = useParams();
+  const router = useRouter();
   const groupId = params.id as string;
+  
+ 
   
   const [chores, setChores] = useState<Chore[]>([]);
   const [filteredChores, setFilteredChores] = useState<Chore[]>([]);
@@ -62,25 +62,15 @@ export default function ChoreLogPage() {
     setSearchQuery(e.target.value);
   };
   
-  const router = useRouter();
-  
   // Handle logging a chore
   const handleLogChore = async (choreId: number) => {
     setLoggingChore(choreId);
     
-    // Get user from local storage
-    const user = getUserFromStorage();
+    // Check if user is authenticated
     
-    if (!user) {
-      setError("You need to join the group first");
-      setTimeout(() => {
-        router.push(`/join/${groupId}`);
-      }, 2000);
-      return;
-    }
     
     try {
-      const result = await logChore(choreId, user.id, parseInt(groupId));
+      const result = await logChore(choreId, parseInt(groupId));
       
       if (result.success) {
         setSuccessMessage("Chore logged successfully!");

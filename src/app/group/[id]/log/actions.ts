@@ -1,6 +1,8 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma";
+import { auth } from "@/auth";
 
 // Get all chores for a group
 export async function getChoresForGroup(groupId: string) {
@@ -27,10 +29,15 @@ export async function getChoresForGroup(groupId: string) {
 }
 
 // Log a completed chore
-export async function logChore(choreId: number, userId: number, groupId: number) {
+export async function logChore(choreId: number,  groupId: number) {
+  const session = await auth()
   try {
+    const userId = session?.user?.id 
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
     // Validate inputs
-    if (isNaN(choreId) || isNaN(userId) || isNaN(groupId)) {
+    if (isNaN(choreId) || isNaN(groupId)) {
       throw new Error("Invalid input parameters");
     }
     

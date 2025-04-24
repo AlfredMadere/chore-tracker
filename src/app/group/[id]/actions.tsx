@@ -14,7 +14,11 @@ export async function getGroupById(id: string) {
     const group = await prisma.group.findUnique({
       where: { id: groupId },
       include: {
-        users: true,
+        userGroups: {
+          include: {
+            user: true
+          }
+        },
         Chore: true,
         ChoreLog: {
           include: {
@@ -82,7 +86,11 @@ export async function getPointsPerUser(id: string) {
     const group = await prisma.group.findUnique({
       where: { id: groupId },
       include: {
-        users: true,
+        userGroups: {
+          include: {
+            user: true
+          }
+        },
         ChoreLog: {
           include: {
             chore: true,
@@ -97,13 +105,13 @@ export async function getPointsPerUser(id: string) {
     }
     
     // Calculate points per user
-    const pointsPerUser = group.users.map(user => {
-      const userLogs = group.ChoreLog.filter(log => log.userId === user.id);
+    const pointsPerUser = group.userGroups.map(userGroup => {
+      const userLogs = group.ChoreLog.filter(log => log.userId === userGroup.userId);
       const totalPoints = userLogs.reduce((sum, log) => sum + log.chore.points, 0);
       
       return {
-        id: user.id,
-        name: user.name || user.email.split('@')[0], // Use first part of email if name not available
+        id: userGroup.userId,
+        name: userGroup.user.name || userGroup.user.email.split('@')[0], // Use first part of email if name not available
         points: totalPoints
       };
     });
