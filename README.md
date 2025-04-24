@@ -1,5 +1,3 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
 ## Getting Started
 
 First, run the development server:
@@ -16,21 +14,25 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## High level plan
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Idea
+- Chore tracking app to help roomates equitibly distribute household tasks and keep each other accountable
+- No more: Add up the percentage that everyone says they did and it's somehow 300%
+  
+#### Features
+MVP: high priority
+- As a user i can join a group by following a link
+- As a user i can log a chore
+- As a user i can see a list of all logged chores
+- As a user i can see a histogram of how many chores each person in the group has done
+- As a user i can edit the list of chores that need to get done for my group
 
-## Learn More
+Nice to have:
+- As a user who has done the most chores this period, i can prioritize the chores that need to get done
+- As a user i can get more points for doing high priority chores
 
-To learn more about Next.js, take a look at the following resources:
+Intentional limitations:
+- No authentication
+- Can only join a single group
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
