@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -13,12 +14,12 @@ export default function Home() {
             A simple way for roommates to equitably distribute household tasks and keep each other accountable.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="rounded-full bg-black dark:bg-white text-white dark:text-black px-6 py-3 font-medium text-base hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
+            <Link href="/create" className="rounded-full bg-black dark:bg-white text-white dark:text-black px-6 py-3 font-medium text-base hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors inline-flex items-center justify-center">
               Create a Group
-            </button>
-            <button className="rounded-full border border-gray-300 dark:border-gray-700 px-6 py-3 font-medium text-base hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors">
+            </Link>
+            <Link href="/join" className="rounded-full border border-gray-300 dark:border-gray-700 px-6 py-3 font-medium text-base hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors inline-flex items-center justify-center">
               Join a Group
-            </button>
+            </Link>
           </div>
         </div>
 

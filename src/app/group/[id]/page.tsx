@@ -54,7 +54,14 @@ export default function GroupPage() {
   
   // Copy invite link to clipboard
   const copyInviteLink = () => {
-    const inviteLink = `${window.location.origin}/join/${groupId}`;
+    // Use sharingId instead of groupId for more secure sharing links
+    const sharingId = group?.sharingId;
+    if (!sharingId) {
+      setError("Sharing ID not available");
+      return;
+    }
+    
+    const inviteLink = `${window.location.origin}/join?code=${sharingId}`;
     navigator.clipboard.writeText(inviteLink)
       .then(() => {
         setCopySuccess(true);

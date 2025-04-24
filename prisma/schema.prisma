@@ -23,11 +23,12 @@ model User {
 }
 
 model Group {
-  id       Int        @id @default(autoincrement())
-  name     String
-  users    User[]
-  Chore    Chore[]
-  ChoreLog ChoreLog[]
+  id        Int        @id @default(autoincrement())
+  name      String
+  sharingId String     @unique @default(dbgenerated("gen_random_uuid()"))
+  users     User[]
+  Chore     Chore[]
+  ChoreLog  ChoreLog[]
 }
 
 model Chore {
@@ -49,3 +50,5 @@ model ChoreLog {
   userId    Int
   groupId   Int
 }
+
+

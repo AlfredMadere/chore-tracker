@@ -1,75 +1,63 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { saveUserToStorage } from "@/lib/userStorage";
+import { getGroupById, joinGroupAction } from "./actions";
 
-// This would typically be a server action in a separate file
-async function joinGroup(groupId: string, email: string, name?: string) {
-  try {
-    const response = await fetch('/api/join-group', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        groupId: parseInt(groupId),
-        email,
-        name
-      }),
-    });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to join group');
-    }
-
-    // Get the user data from the response
-    const userData = await response.json();
-    return { success: true, user: userData.user };
-  } catch (error) {
-    console.error('Error joining group:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to join group' 
-    };
-  }
-}
 
 export default function JoinGroupPage() {
   const params = useParams();
   const router = useRouter();
   const groupId = params.id as string;
   
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [groupName, setGroupName] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [joining, setJoining] = useState(false);
   
-  useEffect(() => {
-    async function fetchGroup() {
-      try {
-        const response = await fetch(`/api/groups/${groupId}`);
-        
-        if (!response.ok) {
-          throw new Error("Group not found");
-        }
-        
-        const group = await response.json();
-        setGroupName(group.name);
-        setLoading(false);
-      } catch (error) {
-        setError("Failed to find group. The group may not exist.");
-        setLoading(false);
+  // Use useQuery to fetch the group data
+  const groupQuery = useQuery({
+    queryKey: ['group', groupId],
+    queryFn: async () => {
+      const result = await getGroupById(groupId);
+      if (!result.success) {
+        throw new Error(result.error);
       }
-    }
-    
-    fetchGroup();
-  }, [groupId]);
+      return result.data;
+    },
+    retry: 1
+  });
   
-  const handleJoin = async (e: React.FormEvent) => {
+  // Use useMutation to handle joining the group
+  const joinMutation = useMutation({
+    mutationFn: async ({ groupId, email, name }: { groupId: string, email: string, name?: string }) => {
+      const result = await joinGroupAction(groupId, email, name);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      return result.user;
+    },
+    onSuccess: (user) => {
+      // Save user info to local storage
+      if (user) {
+        saveUserToStorage({
+          id: user.id,
+          email: user.email,
+          name: user.name
+        });
+        
+        // Redirect to the group page
+        router.push(`/group/${groupId}`);
+      }
+    },
+    onError: (error: Error) => {
+      setError(error.message || "Failed to join group");
+    }
+  });
+  
+  const handleJoin = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email.trim()) {
@@ -77,25 +65,11 @@ export default function JoinGroupPage() {
       return;
     }
     
-    setJoining(true);
-    const result = await joinGroup(groupId, email, name);
-    
-    if (result.success && result.user) {
-      // Save user info to local storage
-      saveUserToStorage({
-        id: result.user.id,
-        email: result.user.email,
-        name: result.user.name
-      });
-      
-      router.push(`/group/${groupId}`);
-    } else {
-      setError(result.error || "Failed to join group");
-      setJoining(false);
-    }
+    setError("");
+    joinMutation.mutate({ groupId, email, name });
   };
   
-  if (loading) {
+  if (groupQuery.isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8 p-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800">
@@ -112,7 +86,9 @@ export default function JoinGroupPage() {
     );
   }
   
-  if (error && !joining) {
+  if (groupQuery.isError) {
+    const errorMessage = groupQuery.error instanceof Error ? groupQuery.error.message : "Failed to find group";
+    
     return (
       <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8 p-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800">
@@ -120,7 +96,7 @@ export default function JoinGroupPage() {
             <h2 className="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white">
               Error
             </h2>
-            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errorMessage}</p>
             <button
               onClick={() => router.push("/")}
               className="mt-4 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
@@ -138,7 +114,7 @@ export default function JoinGroupPage() {
       <div className="max-w-md w-full space-y-8 p-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            Join {groupName}
+            Join {groupQuery.data?.name}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             Enter your information to join this group
@@ -198,10 +174,10 @@ export default function JoinGroupPage() {
           <div>
             <button
               type="submit"
-              disabled={joining}
+              disabled={joinMutation.isPending}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {joining ? (
+              {joinMutation.isPending ? (
                 <>
                   <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                     <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
