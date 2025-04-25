@@ -1,6 +1,5 @@
 // Simple user storage utility using localStorage
 // This is a simplified approach without proper authentication
-import { User } from "@/generated/prisma";
 
 // Define a simplified user type for storage
 export type StoredUser = {

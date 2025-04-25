@@ -1,8 +1,7 @@
 "use server";
 
-import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+import prisma from "@/lib/prisma";
 
 export async function joinGroupById(id: string) {
   const session = await auth();

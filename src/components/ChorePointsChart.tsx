@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type UserPoints = {
-  id: number;
+  id: string;
   name: string;
   points: number;
 };
@@ -48,8 +48,8 @@ export default function ChorePointsChart({ groupId, getPointsPerUser }: ChorePoi
         } else {
           setError(result.error || "Failed to load points data");
         }
-      } catch (err) {
-        setError("An error occurred while fetching points data");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "An error occurred while fetching points data");
       }
       setLoading(false);
     }

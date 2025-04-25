@@ -20,7 +20,6 @@ export default function GroupPage() {
   const { 
     data: group, 
     isLoading,
-    error: queryError,
     refetch
   } = useQuery({
     queryKey: ["group", groupId],
@@ -53,8 +52,8 @@ export default function GroupPage() {
       setIsEditing(false);
       refetch(); // Refresh group data
     },
-    onError: (err: any) => {
-      setError(err.message || "Failed to update group name");
+    onError: (err: unknown) => {
+      setError(err instanceof Error ? err.message : "Failed to update group name");
     }
   });
   

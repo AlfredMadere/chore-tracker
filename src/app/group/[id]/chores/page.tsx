@@ -66,7 +66,7 @@ export default function EditChoresPage() {
   const onSubmit = async (data: ChoreFormData) => {
     const result = await addChore(groupId, data.name, data.points);
     
-    if (result.success) {
+    if (result.success && result.data) {
       setChores(prev => [...prev, result.data]);
       setSuccessMessage("Chore added successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);

@@ -1,21 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { format } from "date-fns";
 
 type ChoreLog = {
   id: number;
-  createdAt: string;
+  createdAt: string | Date;
   chore: {
     id: number;
     name: string;
     points: number;
+    groupId: number;
   };
   user: {
-    id: number;
+    id: string;
     email: string;
     name?: string | null;
+    image?: string | null;
   };
 };
 
@@ -26,8 +27,8 @@ type ChoreLogListProps = {
 
 export default function ChoreLogList({ choreLogs, maxHeight = "400px" }: ChoreLogListProps) {
   // Format the date nicely
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (dateValue: string | Date) => {
+    const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
     const now = new Date();
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);

@@ -1,8 +1,7 @@
 "use server";
 
-import prisma from "@/lib/prisma";
-import { Prisma } from "@/generated/prisma";
 import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
 
 // Get all chores for a group
 export async function getChoresForGroup(groupId: string) {

@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 
 export default function CreateGroupPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [groupName, setGroupName] = useState("");
   const [error, setError] = useState("");
   

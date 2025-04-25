@@ -1,17 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { getChoresForGroup, logChore } from "./actions";
 import { Chore as PrismaChore } from "@/generated/prisma";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getChoresForGroup, logChore } from "./actions";
 
 // Use a type that matches what we get from the server
 type Chore = Pick<PrismaChore, 'id' | 'name' | 'points' | 'groupId'>;
 
 export default function ChoreLogPage() {
   const params = useParams();
-  const router = useRouter();
   const groupId = params.id as string;
   
  
@@ -79,9 +77,8 @@ export default function ChoreLogPage() {
         setError(result.error || "Failed to log chore");
         setTimeout(() => setError(""), 3000);
       }
-    } catch (err) {
-      setError("An error occurred while logging the chore");
-      setTimeout(() => setError(""), 3000);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An error occurred while logging the chore");
     }
     
     setLoggingChore(null);

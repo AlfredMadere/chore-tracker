@@ -62,7 +62,7 @@ export function UserGroups() {
     <Card className="w-full">
       <CardHeader>
         <CardTitle>Your Groups</CardTitle>
-        <CardDescription>Groups you've joined or created</CardDescription>
+        <CardDescription>{`Groups you've joined or created`}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
