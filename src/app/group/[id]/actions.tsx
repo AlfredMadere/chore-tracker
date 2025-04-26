@@ -1,6 +1,6 @@
 "use server";
 
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 // Get group by ID with all related data
 export async function getGroupById(id: string) {
