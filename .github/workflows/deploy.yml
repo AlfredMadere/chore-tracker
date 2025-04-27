@@ -29,4 +29,4 @@ jobs:
       - name: Trigger Vercel Deploy
         run: |
           echo "Triggering Vercel deploy..."
-          curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}"
+          curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}?buildCache=false"
