@@ -23,6 +23,7 @@ jobs:
 
       - name: Run Prisma Migrations
         env:
+          NO_PREPARED_STATEMENTS_PRISMA_DATABASE_URL: ${{ secrets.NO_PREPARED_STATEMENTS_PRISMA_DATABASE_URL }}
           POSTGRES_URL_NON_POOLING: ${{ secrets.POSTGRES_URL_NON_POOLING }}
         run: npx prisma migrate deploy
 
