@@ -25,3 +25,6 @@ ALTER TABLE "UserToGroups" ADD CONSTRAINT "UserToGroups_userId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "UserToGroups" ADD CONSTRAINT "UserToGroups_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "Group"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+
+
