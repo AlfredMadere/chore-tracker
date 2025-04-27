@@ -13,6 +13,7 @@ type NavItemProps = {
   isActive: boolean;
 };
 
+
 function NavItem({ href, icon, label, isActive }: NavItemProps) {
   return (
     <Link
