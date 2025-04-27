@@ -2,7 +2,9 @@ import { auth } from "@/auth";
 import { AuthStatus } from "@/components/AuthStatus";
 import { Button } from "@/components/ui/button";
 import { UserGroups } from "@/components/UserGroups";
+import { GroupCounter } from "@/components/GroupCounter";
 import { redirect } from "next/navigation";
+import { Toaster } from "@/components/ui/sonner";
 
 export default async function Home() {
   const session = await auth();
@@ -33,9 +35,12 @@ export default async function Home() {
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-black dark:text-white mb-6">
             Track Chores, <span className="text-blue-600 dark:text-blue-400">Build Harmony</span>
           </h1>
-          <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 mb-10">
+          <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 mb-6">
             A simple way for roommates to equitably distribute household tasks and keep each other accountable.
           </p>
+          <div className="flex justify-center mb-8">
+            <GroupCounter />
+          </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <form action={handleCreateGroup}>
               <Button 
@@ -70,6 +75,7 @@ export default async function Home() {
           &copy; {new Date().getFullYear()} Chore Tracker. All rights reserved.
         </div>
       </footer>
+      <Toaster />
     </div>
   );
 }
