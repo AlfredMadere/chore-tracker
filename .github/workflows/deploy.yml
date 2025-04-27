@@ -23,7 +23,7 @@ jobs:
 
       - name: Run Prisma Migrations
         env:
-          POSTGRES_URL: ${{ secrets.POSTGRES_URL_NON_POOLING }}
+          POSTGRES_URL_NON_POOLING: ${{ secrets.POSTGRES_URL_NON_POOLING }}
         run: npx prisma migrate deploy
 
       - name: Trigger Vercel Deploy
