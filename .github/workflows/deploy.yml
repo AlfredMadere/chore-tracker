@@ -21,15 +21,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Check for Prisma Migrations
-        id: check_migrations
-        run: |
-          chmod +x scripts/check_migrations.sh
-          source scripts/check_migrations.sh
-          echo "should_run_migrate=$SHOULD_RUN_MIGRATE" >> "$GITHUB_OUTPUT"
-
       - name: Run Prisma Migrations
-        if: steps.check_migrations.outputs.should_run_migrate == 'true'
         env:
           POSTGRES_URL: ${{ secrets.POSTGRES_URL_NON_POOLING }}
         run: npx prisma migrate deploy
