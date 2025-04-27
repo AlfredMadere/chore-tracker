@@ -31,7 +31,7 @@ jobs:
       - name: Run Prisma Migrations
         if: steps.check_migrations.outputs.should_run_migrate == 'true'
         env:
-          DATABASE_URL: ${{ secrets.POSTGRES_URL_NON_POOLING }}
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL_NON_POOLING }}
         run: npx prisma migrate deploy
 
       - name: Trigger Vercel Deploy
