@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "prisma generate && next build --no-lint",
+    "check:prisma": "tsx scripts/check_prisma_connection.ts",
+    "build": "pnpm check:prisma &&prisma generate && next build --no-lint",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate"
@@ -45,6 +46,7 @@
     "prisma": "^6.6.0",
     "tailwindcss": "^4",
     "task-master-ai": "^0.12.1",
+    "tsx": "^4.19.3",
     "tw-animate-css": "^1.2.8",
     "typescript": "^5"
   }
