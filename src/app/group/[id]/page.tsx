@@ -76,7 +76,7 @@ export default function GroupPage() {
     navigator.clipboard.writeText(inviteLink)
       .then(() => {
         setCopySuccess(true);
-        setTimeout(() => setCopySuccess(false), 2000);
+        setTimeout(() => setCopySuccess(false), 1000);
       })
       .catch(err => {
         console.error("Failed to copy link:", err);

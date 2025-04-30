@@ -10,6 +10,15 @@ const nextConfig: NextConfig = {
 
     return config;
   },
+  // Configure Turbopack
+  experimental: {
+    turbo: {
+      // Turbopack configuration options
+      resolveAlias: {
+        // Add any aliases needed for Turbopack
+      },
+    },
+  },
 };
 
 export default nextConfig;
