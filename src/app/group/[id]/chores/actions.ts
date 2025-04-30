@@ -29,6 +29,16 @@ export async function getChoresForGroup(groupId: string) {
 // Add a new chore
 export async function addChore(groupId: string, name: string, points: number) {
   try {
+   
+    // verify that we aren't making a duplicate chore
+    const choreExists = await prisma.chore.findUnique({
+      where: { name: name.trim(), groupId: parseInt(groupId) }
+    });
+    
+    if (choreExists) {
+      throw new Error("Chore already exists");
+    }
+    
     const id = parseInt(groupId);
     
     if (isNaN(id)) {
@@ -50,7 +60,7 @@ export async function addChore(groupId: string, name: string, points: number) {
         groupId: id
       }
     });
-    
+    //TODO: handle the case where the chore already exists, send back a reasonable error
     return { success: true, data: chore };
   } catch (error) {
     console.error("Error adding chore:", error);
