@@ -64,7 +64,7 @@ export default function ChorePointsChart({ groupId, getPointsPerUser }: ChorePoi
           <CardTitle>Chore Points by User</CardTitle>
         </CardHeader>
         <CardContent className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary/10 border-t-primary"></div>
         </CardContent>
       </Card>
     );
@@ -77,7 +77,7 @@ export default function ChorePointsChart({ groupId, getPointsPerUser }: ChorePoi
           <CardTitle>Chore Points by User</CardTitle>
         </CardHeader>
         <CardContent className="h-64 flex items-center justify-center">
-          <p className="text-red-500">{error}</p>
+          <p className="text-destructive">{error}</p>
         </CardContent>
       </Card>
     );
@@ -90,7 +90,7 @@ export default function ChorePointsChart({ groupId, getPointsPerUser }: ChorePoi
           <CardTitle>Chore Points by User</CardTitle>
         </CardHeader>
         <CardContent className="h-64 flex items-center justify-center">
-          <p className="text-gray-500 dark:text-gray-400">No chore points data available yet</p>
+          <p className="text-muted-foreground">No chore points data available yet</p>
         </CardContent>
       </Card>
     );
@@ -118,10 +118,11 @@ export default function ChorePointsChart({ groupId, getPointsPerUser }: ChorePoi
               <YAxis />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "rgba(255, 255, 255, 0.9)",
-                  borderRadius: "6px",
-                  border: "1px solid #e2e8f0",
-                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                  backgroundColor: "var(--background)",
+                  color: "var(--foreground)",
+                  borderRadius: "var(--radius)",
+                  border: "1px solid var(--border)",
+                  boxShadow: "var(--shadow)",
                 }}
                 formatter={(value) => [`${value} points`, "Points"]}
               />

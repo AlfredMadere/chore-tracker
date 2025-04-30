@@ -10,7 +10,7 @@ export default function SignIn() {
   const callbackUrl = searchParams.get("callbackUrl") || "/";
   return (
     <div className="flex items-center justify-center min-h-[70vh]">
-      <Card className="w-full max-w-md bg-background">
+      <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
           <CardDescription>
@@ -24,6 +24,7 @@ export default function SignIn() {
           >
             <Button 
               type="submit" 
+              variant="outline"
               className="w-full flex items-center justify-center gap-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" className="w-5 h-5">

@@ -1,6 +1,9 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 
 type ChoreLog = {
@@ -58,8 +61,8 @@ export default function ChoreLogList({ choreLogs, maxHeight = "400px" }: ChoreLo
         <CardHeader>
           <CardTitle>Recent Activity</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+        <CardContent className="flex justify-center items-center min-h-[100px]">
+          <p className="text-center text-muted-foreground py-4">
             No chores have been logged yet
           </p>
         </CardContent>
@@ -73,42 +76,40 @@ export default function ChoreLogList({ choreLogs, maxHeight = "400px" }: ChoreLo
         <CardTitle>Recent Activity</CardTitle>
       </CardHeader>
       <CardContent>
-        <div 
-          className="overflow-y-auto pr-2" 
-          style={{ maxHeight }}
-        >
+        <ScrollArea className="pr-2" style={{ maxHeight }}>
           <ul className="space-y-4">
             {choreLogs.map((log) => (
               <li 
                 key={log.id} 
-                className="p-4 border border-gray-200 dark:border-gray-800 rounded-lg bg-gray-50 dark:bg-gray-800/50"
+                className="p-4 border border-border rounded-lg bg-muted/30"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-3">
-                    {/* Avatar with first initial */}
-                    <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                      {getUserDisplayName(log.user).charAt(0).toUpperCase()}
-                    </div>
+                    <Avatar>
+                      <AvatarFallback className="bg-primary/10 text-primary">
+                        {getUserDisplayName(log.user).charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                     
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
+                      <p className="font-medium text-foreground">
                         <span className="font-semibold">{getUserDisplayName(log.user)}</span> completed{" "}
                         <span className="font-semibold">{log.chore.name}</span>
                       </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      <p className="text-sm text-muted-foreground mt-1">
                         {formatDate(log.createdAt)}
                       </p>
                     </div>
                   </div>
                   
-                  <div className="flex-shrink-0 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                  <Badge variant="outline" className="bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400 hover:bg-green-500/10 hover:text-green-600 dark:hover:bg-green-500/20 dark:hover:text-green-400">
                     +{log.chore.points} points
-                  </div>
+                  </Badge>
                 </div>
               </li>
             ))}
           </ul>
-        </div>
+        </ScrollArea>
       </CardContent>
     </Card>
   );
