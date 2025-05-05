@@ -4,6 +4,9 @@ import { Chore as PrismaChore } from "@/generated/prisma";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getChoresForGroup, logChore } from "./actions";
+import { toast } from "sonner";
+import { Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Use a type that matches what we get from the server
 type Chore = Pick<PrismaChore, 'id' | 'name' | 'points' | 'groupId'>;
@@ -20,7 +23,7 @@ export default function ChoreLogPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [loggingChore, setLoggingChore] = useState<number | null>(null);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [completedChores, setCompletedChores] = useState<number[]>([]);
   
   // Fetch chores
   useEffect(() => {
@@ -66,19 +69,17 @@ export default function ChoreLogPage() {
     
     // Check if user is authenticated
     
-    
     try {
       const result = await logChore(choreId, parseInt(groupId));
       
       if (result.success) {
-        setSuccessMessage("Chore logged successfully!");
-        setTimeout(() => setSuccessMessage(""), 3000);
+        toast.success("Chore logged successfully!");
+        setCompletedChores(prev => [...prev, choreId]);
       } else {
-        setError(result.error || "Failed to log chore");
-        setTimeout(() => setError(""), 3000);
+        toast.error(result.error || "Failed to log chore");
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "An error occurred while logging the chore");
+      toast.error(err instanceof Error ? err.message : "An error occurred while logging the chore");
     }
     
     setLoggingChore(null);
@@ -115,18 +116,7 @@ export default function ChoreLogPage() {
           </div>
         </div>
         
-        {/* Success/Error Messages */}
-        {successMessage && (
-          <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md text-green-800 dark:text-green-400">
-            {successMessage}
-          </div>
-        )}
-        
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-red-800 dark:text-red-400">
-            {error}
-          </div>
-        )}
+        {/* No inline success/error messages - using toast notifications instead */}
         
         {/* Chores List */}
         {filteredChores.length === 0 ? (
@@ -146,23 +136,33 @@ export default function ChoreLogPage() {
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white">{chore.name}</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{chore.points} points</p>
                   </div>
-                  <button
-                    onClick={() => handleLogChore(chore.id)}
-                    disabled={loggingChore === chore.id}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {loggingChore === chore.id ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Processing...
-                      </>
-                    ) : (
-                      "Did it!"
-                    )}
-                  </button>
+                  {completedChores.includes(chore.id) ? (
+                    <Button 
+                      variant="outline" 
+                      className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+                      disabled
+                    >
+                      <Check className="h-4 w-4 mr-2" /> Completed
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => handleLogChore(chore.id)}
+                      disabled={loggingChore === chore.id}
+                      variant="default"
+                    >
+                      {loggingChore === chore.id ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Processing...
+                        </>
+                      ) : (
+                        "Did it!"
+                      )}
+                    </Button>
+                  )}
                 </li>
               ))}
             </ul>

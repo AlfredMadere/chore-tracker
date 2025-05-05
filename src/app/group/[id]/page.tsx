@@ -266,10 +266,7 @@ export default function GroupPage() {
             </CardContent>
           </Card>
         </div>
-      
-        {/* Chore Points Chart */}
-        <ChorePointsChart groupId={groupId} getPointsPerUser={getPointsPerUser} />
-      
+
         {/* Group Agreement */}
         <Card>
           <CardHeader>
@@ -353,6 +350,11 @@ export default function GroupPage() {
             )}
           </CardContent>
         </Card>
+      
+        {/* Chore Points Chart */}
+        <ChorePointsChart groupId={groupId} getPointsPerUser={getPointsPerUser} />
+      
+       
         
         {/* Recent Activity */}
         <ChoreLogList 

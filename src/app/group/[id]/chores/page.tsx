@@ -366,46 +366,54 @@ export default function EditChoresPage() {
             <p className="text-muted-foreground">No chores have been added yet</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {chores.map((chore) => (
-              <Card key={chore.id} className="overflow-hidden">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-medium mb-1">{chore.name}</h3>
-                  <p className="text-sm text-muted-foreground">{chore.points} points</p>
+              <Card key={chore.id} className="flex flex-col h-full border border-border">
+                <CardContent className="flex-grow p-4 pb-0">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-lg font-medium text-foreground truncate">{chore.name}</h3>
+                    <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                      {chore.points} points
+                    </span>
+                  </div>
                   {chore.description && (
-                    <p className="text-sm mt-2 text-muted-foreground">{chore.description}</p>
+                    <div className="mt-2 text-sm text-muted-foreground line-clamp-3 overflow-hidden">
+                      {chore.description}
+                    </div>
                   )}
                 </CardContent>
-                <CardFooter className="flex justify-between p-4 pt-0">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleEditChore(chore)}
-                    disabled={isDeleting === chore.id || editMutation.isPending}
-                    className="flex items-center gap-1"
-                  >
-                    <Pencil className="h-4 w-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button 
-                    variant="destructive" 
-                    size="sm"
-                    onClick={() => handleDeleteChore(chore.id)}
-                    disabled={isDeleting === chore.id}
-                    className="flex items-center gap-1"
-                  >
-                    {isDeleting === chore.id ? (
-                      <>
-                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-foreground"></div>
-                        Deleting...
-                      </>
-                    ) : (
-                      <>
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Remove
-                      </>
-                    )}
-                  </Button>
+                <CardFooter className="p-4 pt-4 mt-auto">
+                  <div className="w-full flex flex-row gap-2 justify-between">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleEditChore(chore)}
+                      disabled={isDeleting === chore.id || editMutation.isPending}
+                      className="flex-1 flex items-center justify-center"
+                    >
+                      <Pencil className="h-4 w-4 mr-1.5" />
+                      <span>Edit</span>
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => handleDeleteChore(chore.id)}
+                      disabled={isDeleting === chore.id}
+                      className="flex-1 flex items-center justify-center"
+                    >
+                      {isDeleting === chore.id ? (
+                        <>
+                          <div className="mr-1.5 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-foreground"></div>
+                          <span>Deleting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="h-4 w-4 mr-1.5" />
+                          <span>Remove</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </CardFooter>
               </Card>
             ))}
