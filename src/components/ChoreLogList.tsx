@@ -1,10 +1,27 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 import { format } from "date-fns";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { deleteChoreLog } from "@/app/group/[id]/log/actions";
+import { useSession } from "next-auth/react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type ChoreLog = {
   id: number;
@@ -26,9 +43,59 @@ type ChoreLog = {
 type ChoreLogListProps = {
   choreLogs: ChoreLog[];
   maxHeight?: string;
+  onChoreLogDeleted?: (choreLogId: number) => void;
 };
 
-export default function ChoreLogList({ choreLogs, maxHeight = "400px" }: ChoreLogListProps) {
+export default function ChoreLogList({ choreLogs, maxHeight = "400px", onChoreLogDeleted }: ChoreLogListProps) {
+  const { data: session } = useSession();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedChoreLog, setSelectedChoreLog] = useState<ChoreLog | null>(null);
+  
+  // Delete chore log mutation
+  const deleteMutation = useMutation<
+    { success: boolean; error?: string },
+    Error,
+    number
+  >({
+    mutationFn: async (choreLogId: number) => {
+      const result = await deleteChoreLog(choreLogId);
+      return result;
+    },
+    onSuccess: (result, choreLogId) => {
+      if (result.success) {
+        toast.success("Chore unlogged successfully");
+        if (onChoreLogDeleted) {
+          onChoreLogDeleted(choreLogId);
+        }
+      } else {
+        toast.error(result.error || "Failed to unlog chore");
+      }
+    },
+    onError: (error) => {
+      toast.error("An error occurred while unlogging the chore");
+      console.error("Error unlogging chore:", error);
+    }
+  });
+  
+  // Handle delete button click
+  const handleDeleteClick = (log: ChoreLog) => {
+    setSelectedChoreLog(log);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  // Handle confirm delete
+  const handleConfirmDelete = () => {
+    if (selectedChoreLog) {
+      deleteMutation.mutate(selectedChoreLog.id);
+    }
+    setIsDeleteDialogOpen(false);
+  };
+  
+  // Check if user can delete a log (if they created it)
+  const canDeleteLog = (log: ChoreLog) => {
+    // Use email to match users since the session doesn't have the ID in the client component
+    return session?.user?.email === log.user.email;
+  };
   // Format the date nicely
   const formatDate = (dateValue: string | Date) => {
     const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
@@ -102,15 +169,49 @@ export default function ChoreLogList({ choreLogs, maxHeight = "400px" }: ChoreLo
                     </div>
                   </div>
                   
-                  <Badge variant="outline" className="bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400 hover:bg-green-500/10 hover:text-green-600 dark:hover:bg-green-500/20 dark:hover:text-green-400">
-                    +{log.chore.points} points
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    {canDeleteLog(log) && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive" 
+                        onClick={() => handleDeleteClick(log)}
+                        title="Unlog this chore"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <Badge variant="outline" className="bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400 hover:bg-green-500/10 hover:text-green-600 dark:hover:bg-green-500/20 dark:hover:text-green-400">
+                      +{log.chore.points} points
+                    </Badge>
+                  </div>
                 </div>
               </li>
             ))}
           </ul>
         </ScrollArea>
       </CardContent>
+      
+      {/* Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unlog Chore</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to unlog this chore? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Unlog
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

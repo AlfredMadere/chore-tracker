@@ -21,6 +21,7 @@ export default function GroupPage() {
   const [editedName, setEditedName] = useState("");
   const [copySuccess, setCopySuccess] = useState(false);
   const [error, setError] = useState("");
+  const [choreLogs, setChoreLogs] = useState<any[]>([]);
   
   // Use React Query to fetch group data
   const { 
@@ -38,10 +39,11 @@ export default function GroupPage() {
     }
   });
   
-  // Set edited name when group data is available
+  // Set edited name and chore logs when group data is available
   useEffect(() => {
     if (group) {
       setEditedName(group.name || "");
+      setChoreLogs(group.ChoreLog || []);
     }
   }, [group]);
   
@@ -88,6 +90,14 @@ export default function GroupPage() {
         console.error("Failed to copy link:", err);
         setError("Failed to copy link to clipboard");
       });
+  };
+  
+  // Handle chore log deletion
+  const handleChoreLogDeleted = (choreLogId: number) => {
+    // Update the local state to remove the deleted log
+    setChoreLogs(prevLogs => prevLogs.filter(log => log.id !== choreLogId));
+    // Refresh the points chart data
+    refetch();
   };
   
   if (isLoading) {
@@ -214,7 +224,11 @@ export default function GroupPage() {
         <ChorePointsChart groupId={groupId} getPointsPerUser={getPointsPerUser} />
       
         {/* Recent Activity */}
-        <ChoreLogList choreLogs={group.ChoreLog || []} maxHeight="400px" />
+        <ChoreLogList 
+          choreLogs={choreLogs} 
+          maxHeight="400px" 
+          onChoreLogDeleted={handleChoreLogDeleted} 
+        />
       </div>
     </div>
   );

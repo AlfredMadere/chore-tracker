@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { success, failure, ActionResult } from "@/lib/utils";
 
 // Get all chores for a group
 export async function getChoresForGroup(groupId: string) {
@@ -103,5 +104,46 @@ export async function getRecentChoreLogs(groupId: string, limit: number = 10) {
       success: false, 
       error: error instanceof Error ? error.message : "Failed to fetch chore logs" 
     };
+  }
+}
+
+// Delete (unlog) a chore log entry
+export async function deleteChoreLog(choreLogId: number): Promise<ActionResult<void>> {
+  try {
+    const session = await auth();
+    const userId = session?.user?.id;
+    
+    if (!userId) {
+      return failure("User not authenticated");
+    }
+    
+    // Validate input
+    if (isNaN(choreLogId)) {
+      return failure("Invalid chore log ID");
+    }
+    
+    // Check if the chore log exists
+    const choreLog = await prisma.choreLog.findUnique({
+      where: { id: choreLogId }
+    });
+    
+    if (!choreLog) {
+      return failure("Chore log not found");
+    }
+    
+    // Verify that the user is the one who created the log
+    if (choreLog.userId !== userId) {
+      return failure("You can only unlog chores that you logged yourself");
+    }
+    
+    // Delete the chore log
+    await prisma.choreLog.delete({
+      where: { id: choreLogId }
+    });
+    
+    return success(undefined);
+  } catch (error) {
+    console.error("Error deleting chore log:", error);
+    return failure(error instanceof Error ? error.message : "Failed to delete chore log");
   }
 }
