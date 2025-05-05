@@ -26,12 +26,13 @@ model Group {
 }
 
 model Chore {
-  id       Int        @id @default(autoincrement())
-  name     String     @unique
-  points   Int
-  group    Group      @relation(fields: [groupId], references: [id])
-  groupId  Int
-  ChoreLog ChoreLog[]
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
+  points      Int
+  description String     @default("")
+  group       Group      @relation(fields: [groupId], references: [id])
+  groupId     Int
+  ChoreLog    ChoreLog[]
 }
 
 model ChoreLog {

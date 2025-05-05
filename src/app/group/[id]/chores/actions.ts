@@ -27,7 +27,7 @@ export async function getChoresForGroup(groupId: string) {
 }
 
 // Add a new chore
-export async function addChore(groupId: string, name: string, points: number) {
+export async function addChore(groupId: string, name: string, points: number, description: string = "") {
   try {
    
     // verify that we aren't making a duplicate chore
@@ -57,6 +57,7 @@ export async function addChore(groupId: string, name: string, points: number) {
       data: {
         name: name.trim(),
         points,
+        description,
         groupId: id
       }
     });
@@ -98,6 +99,63 @@ export async function deleteChore(choreId: number) {
     return { 
       success: false, 
       error: error instanceof Error ? error.message : "Failed to delete chore" 
+    };
+  }
+}
+
+// Update an existing chore
+export async function updateChore(choreId: number, name: string, points: number, description: string = "") {
+  try {
+    if (isNaN(choreId)) {
+      throw new Error("Invalid chore ID");
+    }
+    
+    // Check if the chore exists
+    const existingChore = await prisma.chore.findUnique({
+      where: { id: choreId }
+    });
+    
+    if (!existingChore) {
+      throw new Error("Chore not found");
+    }
+    
+    if (!name || name.trim() === "") {
+      throw new Error("Chore name is required");
+    }
+    
+    if (isNaN(points) || points < 0) {
+      throw new Error("Points must be a positive number");
+    }
+    
+    // Check if another chore with the same name exists (excluding the current chore)
+    const duplicateChore = await prisma.chore.findFirst({
+      where: {
+        name: name.trim(),
+        groupId: existingChore.groupId,
+        id: { not: choreId }
+      }
+    });
+    
+    if (duplicateChore) {
+      throw new Error("Another chore with this name already exists");
+    }
+    
+    // Update the chore
+    const updatedChore = await prisma.chore.update({
+      where: { id: choreId },
+      data: {
+        name: name.trim(),
+        points,
+        description
+      }
+    });
+    
+    return { success: true, data: updatedChore };
+  } catch (error) {
+    console.error("Error updating chore:", error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : "Failed to update chore" 
     };
   }
 }
