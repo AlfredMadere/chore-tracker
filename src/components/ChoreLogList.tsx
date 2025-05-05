@@ -1,27 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useState, useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
-import { format } from "date-fns";
+import { format, isSameDay, parseISO, isToday, isYesterday } from "date-fns";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { deleteChoreLog } from "@/app/group/[id]/log/actions";
 import { useSession } from "next-auth/react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import ChoreLogItem from "./ChoreLogItem";
+import { Calendar } from "lucide-react";
 
 type ChoreLog = {
   id: number;
@@ -48,8 +36,6 @@ type ChoreLogListProps = {
 
 export default function ChoreLogList({ choreLogs, maxHeight = "400px", onChoreLogDeleted }: ChoreLogListProps) {
   const { data: session } = useSession();
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedChoreLog, setSelectedChoreLog] = useState<ChoreLog | null>(null);
   
   // Delete chore log mutation
   const deleteMutation = useMutation<
@@ -77,60 +63,78 @@ export default function ChoreLogList({ choreLogs, maxHeight = "400px", onChoreLo
     }
   });
   
-  // Handle delete button click
-  const handleDeleteClick = (log: ChoreLog) => {
-    setSelectedChoreLog(log);
-    setIsDeleteDialogOpen(true);
-  };
-  
-  // Handle confirm delete
-  const handleConfirmDelete = () => {
-    if (selectedChoreLog) {
-      deleteMutation.mutate(selectedChoreLog.id);
-    }
-    setIsDeleteDialogOpen(false);
-  };
-  
   // Check if user can delete a log (if they created it)
   const canDeleteLog = (log: ChoreLog) => {
-    // Use email to match users since the session doesn't have the ID in the client component
     return session?.user?.email === log.user.email;
   };
-  // Format the date nicely
+  
+  // Format the date for display
   const formatDate = (dateValue: string | Date) => {
     const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
-    const now = new Date();
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
     
-    // If it's today
-    if (date.toDateString() === now.toDateString()) {
+    if (isToday(date)) {
       return `Today at ${format(date, "h:mm a")}`;
     }
     
-    // If it's yesterday
-    if (date.toDateString() === yesterday.toDateString()) {
+    if (isYesterday(date)) {
       return `Yesterday at ${format(date, "h:mm a")}`;
     }
     
-    // Otherwise show full date
     return format(date, "MMM d, yyyy 'at' h:mm a");
   };
   
-  // Get display name for user
-  const getUserDisplayName = (user: { email: string; name?: string | null }) => {
-    return user.name || user.email.split('@')[0];
+  // Group logs by date for the timeline
+  const groupedLogs = useMemo(() => {
+    // Sort logs by date (newest first)
+    const sortedLogs = [...choreLogs].sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB.getTime() - dateA.getTime();
+    });
+    
+    // Track which logs start a new day
+    const newDayFlags = sortedLogs.map((log, index) => {
+      if (index === 0) return true;
+      
+      const currentDate = new Date(log.createdAt);
+      const prevDate = new Date(sortedLogs[index - 1].createdAt);
+      
+      return !isSameDay(currentDate, prevDate);
+    });
+    
+    return sortedLogs.map((log, index) => ({
+      log,
+      isNewDay: newDayFlags[index],
+      formattedDate: formatDate(log.createdAt)
+    }));
+  }, [choreLogs]);
+  
+  // Handle deleting a log
+  const handleDelete = (id: number) => {
+    deleteMutation.mutate(id);
   };
   
   if (choreLogs.length === 0) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Chore Timeline
+          </CardTitle>
+          <CardDescription>
+            Track when chores are completed
+          </CardDescription>
         </CardHeader>
-        <CardContent className="flex justify-center items-center min-h-[100px]">
-          <p className="text-center text-muted-foreground py-4">
+        <CardContent className="flex flex-col justify-center items-center min-h-[200px] py-12">
+          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+            <Calendar className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <p className="text-center text-muted-foreground">
             No chores have been logged yet
+          </p>
+          <p className="text-center text-sm text-muted-foreground mt-1">
+            Complete a chore to see it in the timeline
           </p>
         </CardContent>
       </Card>
@@ -138,80 +142,33 @@ export default function ChoreLogList({ choreLogs, maxHeight = "400px", onChoreLo
   }
   
   return (
-    <Card>
+    <Card className="border-0 shadow-none md:border md:shadow ">
       <CardHeader>
-        <CardTitle>Recent Activity</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="h-5 w-5" />
+          Chore Timeline
+        </CardTitle>
+        <CardDescription>
+          Track when chores are completed
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <ScrollArea className="pr-2" style={{ maxHeight }}>
-          <ul className="space-y-4">
-            {choreLogs.map((log) => (
-              <li 
-                key={log.id} 
-                className="p-4 border border-border rounded-lg bg-muted/30"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3">
-                    <Avatar>
-                      <AvatarFallback className="bg-primary/10 text-primary">
-                        {getUserDisplayName(log.user).charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    
-                    <div>
-                      <p className="font-medium text-foreground">
-                        <span className="font-semibold">{getUserDisplayName(log.user)}</span> completed{" "}
-                        <span className="font-semibold">{log.chore.name}</span>
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {formatDate(log.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    {canDeleteLog(log) && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive" 
-                        onClick={() => handleDeleteClick(log)}
-                        title="Unlog this chore"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                    <Badge variant="outline" className="bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400 hover:bg-green-500/10 hover:text-green-600 dark:hover:bg-green-500/20 dark:hover:text-green-400">
-                      +{log.chore.points} points
-                    </Badge>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+      <CardContent className="p-0 sm:px-2">
+        <ScrollArea className="w-full overflow-y-scroll" style={{ maxHeight }}>
+          <div className="flex flex-col gap-4">
+
+              {groupedLogs.map(({ log, isNewDay, formattedDate }) => (
+                <ChoreLogItem
+                  key={log.id}
+                  log={log}
+                  canDelete={canDeleteLog(log)}
+                  onDelete={handleDelete}
+                  timeMarker={formattedDate}
+                  isNewDay={isNewDay}
+                />
+              ))}
+          </div>
         </ScrollArea>
       </CardContent>
-      
-      {/* Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Unlog Chore</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to unlog this chore? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleConfirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Unlog
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </Card>
   );
 }

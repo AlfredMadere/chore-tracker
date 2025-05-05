@@ -3,7 +3,7 @@
 import { useParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { ReactNode, useState } from 'react';
-import { Calendar, CheckCircle, Home, PencilLine, Menu } from 'lucide-react';
+import { Calendar, CheckCircle, Home, PencilLine, Menu, BarChart, Clock } from 'lucide-react';
 import { UserCard } from './UserCard';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -37,7 +37,7 @@ function NavItem({ href, icon, label, isActive }: NavItemProps) {
   );
 }
 
-export  function GroupNavigationDesktop() {
+export function GroupNavigationDesktop() {
   const params = useParams();
   const pathname = usePathname();
   const groupId = params.id as string;
@@ -57,6 +57,16 @@ export  function GroupNavigationDesktop() {
       href: `/group/${groupId}/chores`,
       label: 'Edit Chores',
       icon: <PencilLine className="h-5 w-5" />,
+    },
+    {
+      href: `/group/${groupId}/chore-timeline`,
+      label: 'Timeline',
+      icon: <Clock className="h-5 w-5" />,
+    },
+    {
+      href: `/group/${groupId}/leaderboard`,
+      label: 'Leaderboard',
+      icon: <BarChart className="h-5 w-5" />,
     },
   ];
 
@@ -110,6 +120,16 @@ export function GroupNavigationMobile() {
       label: 'Edit Chores',
       icon: <PencilLine className="h-5 w-5" />,
     },
+    {
+      href: `/group/${groupId}/chore-timeline`,
+      label: 'Timeline',
+      icon: <Clock className="h-5 w-5" />,
+    },
+    {
+      href: `/group/${groupId}/leaderboard`,
+      label: 'Leaderboard',
+      icon: <BarChart className="h-5 w-5" />,
+    },
   ];
   
   return (
@@ -157,8 +177,3 @@ export function GroupNavigationMobile() {
     </div>
   );
 }
-  
-
-
-
-

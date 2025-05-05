@@ -1,0 +1,115 @@
+"use client";
+
+import { useState } from "react";
+import { useParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { getPointsPerUser } from "../actions";
+import ChorePointsChart from "@/components/ChorePointsChart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+type UserPoints = {
+  id: string;
+  name: string;
+  points: number;
+};
+
+export default function LeaderboardPage() {
+  const params = useParams();
+  const groupId = params.id as string;
+
+  // Use React Query to fetch points data
+  const { 
+    data: pointsData, 
+    isLoading,
+    error
+  } = useQuery({
+    queryKey: ["points", groupId],
+    queryFn: async () => {
+      const result = await getPointsPerUser(groupId);
+      if (!result.success) {
+        throw new Error(result.error || "Failed to load points data");
+      }
+      return result.data;
+    }
+  });
+
+  if (isLoading) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Card>
+          <CardContent className="pt-6 flex justify-center items-center min-h-[200px]">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary/10 border-t-primary"></div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Card className="border-destructive">
+          <CardContent className="pt-6 text-center">
+            <h2 className="text-lg font-medium text-destructive mb-2">Error</h2>
+            <p className="text-destructive/80">{(error as Error).message}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="grid grid-cols-1 gap-8">
+        {/* Chart View */}
+        <ChorePointsChart groupId={groupId} getPointsPerUser={getPointsPerUser} />
+        
+        {/* Leaderboard List View */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Leaderboard</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!pointsData || pointsData.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">No points data available yet</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {pointsData.map((user, index) => (
+                  <div 
+                    key={user.id} 
+                    className={`flex items-center justify-between p-4 rounded-lg border ${
+                      index === 0 
+                        ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800' 
+                        : 'bg-background border-border'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`
+                        flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm
+                        ${index === 0 ? 'bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200' : 
+                          index === 1 ? 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200' :
+                          index === 2 ? 'bg-amber-100 dark:bg-amber-800 text-amber-800 dark:text-amber-200' :
+                          'bg-muted text-muted-foreground'}
+                      `}>
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className="font-medium">{user.name}</p>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary">
+                      {user.points} points
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

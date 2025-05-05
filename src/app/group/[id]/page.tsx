@@ -3,19 +3,18 @@
 import { useState, useEffect, useTransition } from "react";
 import { useParams } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { getGroupById, updateGroupName, getPointsPerUser, updateGroupAgreement } from "./actions";
+import { getGroupById, updateGroupName, updateGroupAgreement } from "./actions";
 import { toast } from "sonner";
-import ChorePointsChart from "@/components/ChorePointsChart";
-import ChoreLogList from "@/components/ChoreLogList";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Share, Save, X } from "lucide-react";
+import { Pencil, Share, Save, X, BarChart, Clock } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 
 // Agreement form schema
 const agreementSchema = z.object({
@@ -33,7 +32,6 @@ export default function GroupPage() {
   const [editedName, setEditedName] = useState("");
   const [copySuccess, setCopySuccess] = useState(false);
   const [error, setError] = useState("");
-  const [choreLogs, setChoreLogs] = useState<any[]>([]);
   
   // Agreement form
   const agreementForm = useForm<AgreementFormData>({
@@ -59,11 +57,10 @@ export default function GroupPage() {
     }
   });
   
-  // Set edited name, chore logs, and agreement when group data is available
+  // Set edited name and agreement when group data is available
   useEffect(() => {
     if (group) {
       setEditedName(group.name || "");
-      setChoreLogs(group.ChoreLog || []);
       agreementForm.reset({ agreement: group.agreement || "" });
     }
   }, [group, agreementForm]);
@@ -137,14 +134,6 @@ export default function GroupPage() {
         console.error("Failed to copy link:", err);
         setError("Failed to copy link to clipboard");
       });
-  };
-  
-  // Handle chore log deletion
-  const handleChoreLogDeleted = (choreLogId: number) => {
-    // Update the local state to remove the deleted log
-    setChoreLogs(prevLogs => prevLogs.filter(log => log.id !== choreLogId));
-    // Refresh the points chart data
-    refetch();
   };
   
   if (isLoading) {
@@ -351,17 +340,42 @@ export default function GroupPage() {
           </CardContent>
         </Card>
       
-        {/* Chore Points Chart */}
-        <ChorePointsChart groupId={groupId} getPointsPerUser={getPointsPerUser} />
-      
-       
-        
-        {/* Recent Activity */}
-        <ChoreLogList 
-          choreLogs={choreLogs} 
-          maxHeight="400px" 
-          onChoreLogDeleted={handleChoreLogDeleted} 
-        />
+        {/* Group Stats Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Group Overview</CardTitle>
+            <CardDescription>
+              View detailed statistics in the Leaderboard and Timeline tabs
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Button 
+                variant="outline" 
+                className="h-auto py-6 flex flex-col items-center justify-center gap-2" 
+                asChild
+              >
+                <Link href={`/group/${groupId}/leaderboard`}>
+                  <BarChart className="h-8 w-8 text-primary" />
+                  <span className="font-medium">View Leaderboard</span>
+                  <span className="text-sm text-muted-foreground">See who's earned the most points</span>
+                </Link>
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="h-auto py-6 flex flex-col items-center justify-center gap-2" 
+                asChild
+              >
+                <Link href={`/group/${groupId}/chore-timeline`}>
+                  <Clock className="h-8 w-8 text-primary" />
+                  <span className="font-medium">View Timeline</span>
+                  <span className="text-sm text-muted-foreground">See recent chore activity</span>
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
