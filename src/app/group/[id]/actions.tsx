@@ -1,6 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
+import { success, failure, ActionResult } from "@/lib/utils";
 
 // Get group by ID with all related data
 export async function getGroupById(id: string) {
@@ -126,5 +128,47 @@ export async function getPointsPerUser(id: string) {
       success: false, 
       error: error instanceof Error ? error.message : "Failed to calculate points per user" 
     };
+  }
+}
+
+// Update group agreement
+export async function updateGroupAgreement(groupId: string, agreement: string): Promise<ActionResult<any>> {
+  try {
+    const session = await auth();
+    const userId = session?.user?.id;
+    
+    if (!userId) {
+      return failure("User not authenticated");
+    }
+    
+    const id = parseInt(groupId);
+    
+    if (isNaN(id)) {
+      return failure("Invalid group ID");
+    }
+    
+    // Check if the user is a member of the group
+    const userGroup = await prisma.userToGroups.findUnique({
+      where: {
+        userId_groupId: {
+          userId,
+          groupId: id
+        }
+      }
+    });
+    
+    if (!userGroup) {
+      return failure("You are not a member of this group");
+    }
+    
+    // Update the group agreement
+    const updatedGroup = await prisma.group.update({
+      where: { id },
+      data: { agreement }
+    });
+    
+    return success(updatedGroup);
+  } catch (error) {
+    return failure(error, "Failed to update group agreement");
   }
 }

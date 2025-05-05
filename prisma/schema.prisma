@@ -20,6 +20,7 @@ model Group {
   id        Int            @id @default(autoincrement())
   name      String
   sharingId String         @unique @default(dbgenerated("gen_random_uuid()"))
+  agreement String         @default("")
   userGroups     UserToGroups[]
   Chore     Chore[]
   ChoreLog  ChoreLog[]

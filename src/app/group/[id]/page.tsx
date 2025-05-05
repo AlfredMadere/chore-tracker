@@ -3,25 +3,45 @@
 import { useState, useEffect, useTransition } from "react";
 import { useParams } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { getGroupById, updateGroupName, getPointsPerUser } from "./actions";
+import { getGroupById, updateGroupName, getPointsPerUser, updateGroupAgreement } from "./actions";
 import { toast } from "sonner";
 import ChorePointsChart from "@/components/ChorePointsChart";
 import ChoreLogList from "@/components/ChoreLogList";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Share } from "lucide-react";
+import { Pencil, Share, Save, X } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// Agreement form schema
+const agreementSchema = z.object({
+  agreement: z.string().max(2000, "Agreement text must be less than 2000 characters")
+});
+
+type AgreementFormData = z.infer<typeof agreementSchema>;
 
 export default function GroupPage() {
   const params = useParams();
   const groupId = params.id as string;
   
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingAgreement, setIsEditingAgreement] = useState(false);
   const [editedName, setEditedName] = useState("");
   const [copySuccess, setCopySuccess] = useState(false);
   const [error, setError] = useState("");
   const [choreLogs, setChoreLogs] = useState<any[]>([]);
+  
+  // Agreement form
+  const agreementForm = useForm<AgreementFormData>({
+    resolver: zodResolver(agreementSchema) as any,
+    defaultValues: {
+      agreement: ""
+    }
+  });
   
   // Use React Query to fetch group data
   const { 
@@ -39,13 +59,14 @@ export default function GroupPage() {
     }
   });
   
-  // Set edited name and chore logs when group data is available
+  // Set edited name, chore logs, and agreement when group data is available
   useEffect(() => {
     if (group) {
       setEditedName(group.name || "");
       setChoreLogs(group.ChoreLog || []);
+      agreementForm.reset({ agreement: group.agreement || "" });
     }
-  }, [group]);
+  }, [group, agreementForm]);
   
   // Use React Query mutation for updating group name
   const updateGroupMutation = useMutation({
@@ -59,10 +80,36 @@ export default function GroupPage() {
     onSuccess: () => {
       setIsEditing(false);
       refetch(); // Refresh group data
+      toast.success("Group name updated successfully");
     },
     onError: (err: unknown) => {
       setError(err instanceof Error ? err.message : "Failed to update group name");
+      toast.error("Failed to update group name");
     }
+  });
+  
+  // Use React Query mutation for updating group agreement
+  const updateAgreementMutation = useMutation({
+    mutationFn: async (agreement: string) => {
+      const result = await updateGroupAgreement(groupId, agreement);
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update group agreement");
+      }
+      return result.data;
+    },
+    onSuccess: () => {
+      setIsEditingAgreement(false);
+      refetch(); // Refresh group data
+      toast.success("Group agreement updated successfully");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to update group agreement");
+    }
+  });
+  
+  // Handle agreement form submission
+  const onAgreementSubmit = agreementForm.handleSubmit((data) => {
+    updateAgreementMutation.mutate(data.agreement);
   });
   
   // Handle name edit
@@ -223,6 +270,90 @@ export default function GroupPage() {
         {/* Chore Points Chart */}
         <ChorePointsChart groupId={groupId} getPointsPerUser={getPointsPerUser} />
       
+        {/* Group Agreement */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Group Agreement</CardTitle>
+              {!isEditingAgreement && (
+                <Button
+                  onClick={() => setIsEditingAgreement(true)}
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  aria-label="Edit agreement"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            <CardDescription>
+              Set expectations and rules for your group
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isEditingAgreement ? (
+              <form onSubmit={onAgreementSubmit}>
+                <div className="space-y-4">
+                  <Textarea
+                    placeholder="Enter your group agreement here..."
+                    className="min-h-[150px]"
+                    {...agreementForm.register("agreement")}
+                  />
+                  {agreementForm.formState.errors.agreement && (
+                    <p className="text-sm text-red-500">
+                      {agreementForm.formState.errors.agreement.message}
+                    </p>
+                  )}
+                  <div className="flex justify-end space-x-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setIsEditingAgreement(false);
+                        agreementForm.reset({ agreement: group?.agreement || "" });
+                      }}
+                      className="flex items-center gap-1"
+                    >
+                      <X className="h-4 w-4" />
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      size="sm"
+                      className="flex items-center gap-1"
+                      disabled={updateAgreementMutation.isPending}
+                    >
+                      {updateAgreementMutation.isPending ? (
+                        <>
+                          <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-foreground"></div>
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4" />
+                          Save
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </form>
+            ) : (
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                {group?.agreement ? (
+                  <div className="whitespace-pre-wrap">{group.agreement}</div>
+                ) : (
+                  <p className="text-muted-foreground italic">
+                    No agreement has been set for this group. Click the edit button to add one.
+                  </p>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        
         {/* Recent Activity */}
         <ChoreLogList 
           choreLogs={choreLogs} 

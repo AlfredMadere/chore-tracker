@@ -21,8 +21,8 @@ export function success<T>(data: T): ActionResult<T> {
 }
 
 // Helper function to return a failure result
-export function failure(error: Error | string, clientError?: string): ActionResult<never> {
-  const errorString = error instanceof Error ? error.message : error;
+export function failure(error: unknown , clientError?: string): ActionResult<never> {
+  const errorString = error instanceof Error ? error.message : error as string;
   console.log("error: ", errorString);
   return {
     success: false,
