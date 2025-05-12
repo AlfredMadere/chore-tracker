@@ -27,13 +27,13 @@ type ChorePointsChartProps = {
     data?: UserPoints[];
     error?: string;
   }>;
+  timeFrame: "week" | "all";
 };
 
-export default function ChorePointsChart({ groupId, getPointsPerUser }: ChorePointsChartProps) {
+export default function ChorePointsChart({ groupId, getPointsPerUser, timeFrame }: ChorePointsChartProps) {
   const [pointsData, setPointsData] = useState<UserPoints[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [timeFrame, setTimeFrame] = useState<"week" | "all">("week");
   
   // Function to get the start of the current week (Sunday at 00:00:00)
   const getStartOfWeek = () => {
@@ -119,14 +119,8 @@ export default function ChorePointsChart({ groupId, getPointsPerUser }: ChorePoi
 
   return (
     <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
+      <CardHeader>
         <CardTitle>Chore Points by User</CardTitle>
-        <Tabs defaultValue="all" value={timeFrame} onValueChange={(value) => setTimeFrame(value as "week" | "all")}>
-          <TabsList>
-            <TabsTrigger value="all">All Time</TabsTrigger>
-            <TabsTrigger value="week">This Week</TabsTrigger>
-          </TabsList>
-        </Tabs>
       </CardHeader>
       <CardContent>
         <div className="h-64 w-full">

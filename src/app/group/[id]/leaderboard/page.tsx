@@ -7,6 +7,7 @@ import { getPointsPerUser } from "../actions";
 import ChorePointsChart from "@/components/ChorePointsChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type UserPoints = {
   id: string;
@@ -17,6 +18,17 @@ type UserPoints = {
 export default function LeaderboardPage() {
   const params = useParams();
   const groupId = params.id as string;
+  const [timeFrame, setTimeFrame] = useState<"week" | "all">("week");
+
+  // Function to get the start of the current week (Sunday at 00:00:00)
+  const getStartOfWeek = () => {
+    const now = new Date();
+    const day = now.getDay(); // 0 is Sunday, 1 is Monday, etc.
+    const sunday = new Date(now);
+    sunday.setDate(now.getDate() - day);
+    sunday.setHours(0, 0, 0, 0);
+    return sunday;
+  };
 
   // Use React Query to fetch points data
   const { 
@@ -24,10 +36,18 @@ export default function LeaderboardPage() {
     isLoading,
     error
   } = useQuery({
-    queryKey: ["points", groupId],
+    queryKey: ["points", groupId, timeFrame],
     queryFn: async () => {
-      // We're using 'All Time' view by default in the leaderboard page
-      const result = await getPointsPerUser(groupId);
+      // Set date filters based on selected time frame
+      let startDate: Date | undefined;
+      let endDate: Date | undefined;
+      
+      if (timeFrame === "week") {
+        startDate = getStartOfWeek();
+        endDate = new Date(); // Current time
+      }
+      
+      const result = await getPointsPerUser(groupId, startDate, endDate);
       if (!result.success) {
         throw new Error(result.error || "Failed to load points data");
       }
@@ -62,9 +82,17 @@ export default function LeaderboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex justify-end mb-4">
+        <Tabs defaultValue="week" value={timeFrame} onValueChange={(value) => setTimeFrame(value as "week" | "all")}>
+          <TabsList>
+            <TabsTrigger value="all">All Time</TabsTrigger>
+            <TabsTrigger value="week">This Week</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
       <div className="grid grid-cols-1 gap-8">
         {/* Chart View */}
-        <ChorePointsChart groupId={groupId} getPointsPerUser={getPointsPerUser} />
+        <ChorePointsChart groupId={groupId} getPointsPerUser={getPointsPerUser} timeFrame={timeFrame} />
         
         {/* Leaderboard List View */}
         <Card>
