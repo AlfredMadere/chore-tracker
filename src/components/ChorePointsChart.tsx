@@ -12,6 +12,7 @@ import {
   Cell,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type UserPoints = {
   id: string;
@@ -21,7 +22,7 @@ type UserPoints = {
 
 type ChorePointsChartProps = {
   groupId: string;
-  getPointsPerUser: (id: string) => Promise<{ 
+  getPointsPerUser: (id: string, startDate?: Date, endDate?: Date) => Promise<{ 
     success: boolean; 
     data?: UserPoints[];
     error?: string;
@@ -32,6 +33,17 @@ export default function ChorePointsChart({ groupId, getPointsPerUser }: ChorePoi
   const [pointsData, setPointsData] = useState<UserPoints[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [timeFrame, setTimeFrame] = useState<"week" | "all">("week");
+  
+  // Function to get the start of the current week (Sunday at 00:00:00)
+  const getStartOfWeek = () => {
+    const now = new Date();
+    const day = now.getDay(); // 0 is Sunday, 1 is Monday, etc.
+    const sunday = new Date(now);
+    sunday.setDate(now.getDate() - day);
+    sunday.setHours(0, 0, 0, 0);
+    return sunday;
+  };
 
   // Colors for the bars
   const colors = ["#3b82f6", "#10b981", "#6366f1", "#f97316", "#ec4899", "#8b5cf6"];
@@ -40,7 +52,16 @@ export default function ChorePointsChart({ groupId, getPointsPerUser }: ChorePoi
     async function fetchPointsData() {
       setLoading(true);
       try {
-        const result = await getPointsPerUser(groupId);
+        // Set date filters based on selected time frame
+        let startDate: Date | undefined;
+        let endDate: Date | undefined;
+        
+        if (timeFrame === "week") {
+          startDate = getStartOfWeek();
+          endDate = new Date(); // Current time
+        }
+        
+        const result = await getPointsPerUser(groupId, startDate, endDate);
         
         if (result.success && result.data) {
           setPointsData(result.data);
@@ -55,7 +76,7 @@ export default function ChorePointsChart({ groupId, getPointsPerUser }: ChorePoi
     }
     
     fetchPointsData();
-  }, [groupId, getPointsPerUser]);
+  }, [groupId, getPointsPerUser, timeFrame]);
 
   if (loading) {
     return (
@@ -98,8 +119,14 @@ export default function ChorePointsChart({ groupId, getPointsPerUser }: ChorePoi
 
   return (
     <Card className="w-full">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle>Chore Points by User</CardTitle>
+        <Tabs defaultValue="all" value={timeFrame} onValueChange={(value) => setTimeFrame(value as "week" | "all")}>
+          <TabsList>
+            <TabsTrigger value="all">All Time</TabsTrigger>
+            <TabsTrigger value="week">This Week</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </CardHeader>
       <CardContent>
         <div className="h-64 w-full">

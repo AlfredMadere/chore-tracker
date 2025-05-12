@@ -77,7 +77,7 @@ export async function updateGroupName(id: string, name: string) {
 }
 
 // Get points per user for a group
-export async function getPointsPerUser(id: string) {
+export async function getPointsPerUser(id: string, startDate?: Date, endDate?: Date) {
   try {
     const groupId = parseInt(id);
     
@@ -94,6 +94,12 @@ export async function getPointsPerUser(id: string) {
           }
         },
         ChoreLog: {
+          where: startDate && endDate ? {
+            createdAt: {
+              gte: startDate,
+              lte: endDate
+            }
+          } : undefined,
           include: {
             chore: true,
             user: true

@@ -26,6 +26,7 @@ export default function LeaderboardPage() {
   } = useQuery({
     queryKey: ["points", groupId],
     queryFn: async () => {
+      // We're using 'All Time' view by default in the leaderboard page
       const result = await getPointsPerUser(groupId);
       if (!result.success) {
         throw new Error(result.error || "Failed to load points data");
