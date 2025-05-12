@@ -38,7 +38,7 @@ model Chore {
 
 model ChoreLog {
   id        Int      @id @default(autoincrement())
-  chore     Chore    @relation(fields: [choreId], references: [id])
+  chore     Chore    @relation(fields: [choreId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id])
   group     Group    @relation(fields: [groupId], references: [id])
   createdAt DateTime @default(now())
