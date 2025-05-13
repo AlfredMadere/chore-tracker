@@ -159,9 +159,15 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
     (editingTime && (editingTime.minutes.trim() !== "" || editingTime.seconds.trim() !== "")));
   
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="border-t-2 border-t-primary bg-background shadow-sm rounded-md">
-      <div className="p-2">
-        <div className="flex flex-col space-y-1.5">
+    <form 
+      onSubmit={handleSubmit(onFormSubmit)} 
+      className="border-t-2 border-t-primary bg-background shadow-sm rounded-md pb-safe"
+    >
+      {/* Add meta tag to prevent zooming on input focus */}
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+      
+      <div className="p-3 sm:p-2">
+        <div className="flex flex-col space-y-3 sm:space-y-1.5">
           {/* Timer Display */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-1">
@@ -175,28 +181,32 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
                   <Input
                     value={editingTime.minutes}
                     onChange={(e) => handleTimeValueChange('minutes', e.target.value)}
-                    className="w-10 h-6 text-xs px-2"
+                    className="w-14 sm:w-10 h-9 sm:h-6 text-base sm:text-xs px-2"
                     placeholder="Min"
                     aria-label="Edit minutes"
                     type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                   />
-                  <span className="text-xs mx-0.5">:</span>
+                  <span className="text-base sm:text-xs mx-1 sm:mx-0.5">:</span>
                   <Input
                     value={editingTime.seconds}
                     onChange={(e) => handleTimeValueChange('seconds', e.target.value)}
-                    className="w-10 h-6 text-xs px-2"
+                    className="w-14 sm:w-10 h-9 sm:h-6 text-base sm:text-xs px-2"
                     placeholder="Sec"
                     aria-label="Edit seconds"
                     type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                   />
                   <Button 
                     size="icon" 
                     variant="ghost" 
-                    className="h-6 w-6 p-0 ml-1" 
+                    className="h-9 w-9 sm:h-6 sm:w-6 p-0 ml-1" 
                     onClick={confirmTimeEdit}
                     type="button"
                   >
-                    <Check className="h-3 w-3" />
+                    <Check className="h-4 w-4 sm:h-3 sm:w-3" />
                   </Button>
                 </div>
               ) : (
@@ -204,7 +214,7 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
                   {!isRunning ? (
                     <button 
                       type="button"
-                      className="text-xs font-mono cursor-pointer hover:text-primary transition-colors"
+                      className="text-base sm:text-xs font-mono cursor-pointer hover:text-primary transition-colors p-2 sm:p-0"
                       onClick={() => {
                         // Prefill with current timer values
                         setEditingTime({
@@ -216,7 +226,7 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
                       {String(displayMinutes).padStart(2, '0')}:{String(displaySeconds).padStart(2, '0')}
                     </button>
                   ) : (
-                    <span className="text-xs font-mono">
+                    <span className="text-base sm:text-xs font-mono p-2 sm:p-0">
                       {String(displayMinutes).padStart(2, '0')}:{String(displaySeconds).padStart(2, '0')}
                     </span>
                   )}
@@ -230,8 +240,10 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
             <Input
               {...register("choreName")}
               placeholder="Unnamed Chore"
-              className={cn("h-7 text-xs px-2", errors.choreName && "border-destructive")}
+              className={cn("h-9 sm:h-7 text-base sm:text-xs px-3 sm:px-2", errors.choreName && "border-destructive")}
               aria-label="Chore name"
+              autoComplete="off"
+              inputMode="text"
             />
           </div>
           {errors.choreName && (
@@ -243,34 +255,36 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
             <Textarea
               {...register("description")}
               placeholder="Description (optional)"
-              className="text-xs px-2 py-1 min-h-[60px] resize-none"
+              className="text-base sm:text-xs px-3 sm:px-2 py-2 sm:py-1 min-h-[80px] sm:min-h-[60px] resize-none"
+              autoComplete="off"
+              rows={3}
             />
           </div>
           
           {/* Controls */}
-          <div className="flex items-center justify-end gap-1">
+          <div className="flex items-center justify-end gap-2 sm:gap-1 mt-2 sm:mt-0">
             
-            <div className="flex gap-1">
+            <div className="flex gap-2 sm:gap-1 w-full sm:w-auto">
               {isRunning ? (
                 <Button 
                   variant="destructive" 
                   size="sm" 
-                  className="h-7 px-2 py-0 text-xs"
+                  className="h-10 sm:h-7 px-4 sm:px-2 py-0 text-sm sm:text-xs flex-1 sm:flex-initial"
                   onClick={stopTimer}
                   type="button"
                 >
-                  <Square className="h-3 w-3 mr-1" /> Stop
+                  <Square className="h-4 w-4 sm:h-3 sm:w-3 mr-1" /> Stop
                 </Button>
               ) : (
                 <Button 
                   variant="default" 
                   size="sm" 
-                  className="h-7 px-2 py-0 text-xs"
+                  className="h-10 sm:h-7 px-4 sm:px-2 py-0 text-sm sm:text-xs flex-1 sm:flex-initial"
                   onClick={startTimer}
                   disabled={!!editingTime}
                   type="button"
                 >
-                  <Play className="h-3 w-3 mr-1" /> 
+                  <Play className="h-4 w-4 sm:h-3 sm:w-3 mr-1" /> 
                   {displayMinutes > 0 || displaySeconds > 0 ? "Resume" : "Start"}
                 </Button>
               )}
@@ -278,7 +292,7 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
               <Button
                 variant="secondary"
                 size="sm"
-                className="h-7 px-2 py-0 text-xs"
+                className="h-10 sm:h-7 px-4 sm:px-2 py-0 text-sm sm:text-xs flex-1 sm:flex-initial"
                 disabled={!canSubmit}
                 type="submit"
               >
