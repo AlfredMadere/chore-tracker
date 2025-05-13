@@ -1,6 +1,8 @@
 "use client";
 
-import { GroupNavigationDesktop, GroupNavigationMobile } from "@/components/GroupNavigation";
+import { GroupNavigationDesktop } from "@/components/GroupNavigation";
+import MobileBottomNav from "@/components/MobileBottomNav";
+import MobileHeader from "@/components/MobileHeader";
 
 export default function GroupLayout({
   children,
@@ -9,11 +11,6 @@ export default function GroupLayout({
 }>) {
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden">
-      {/* Mobile Navigation - Only visible on mobile, sticky at top */}
-      <div className="md:hidden sticky top-0 z-40 w-full bg-background border-b border-border">
-        <GroupNavigationMobile />
-      </div>
-      
       {/* Desktop Navigation - Only visible on desktop, fixed on left */}
       <div className="hidden md:block w-64 flex-shrink-0 border-r border-border">
         <div className="sticky top-0 h-screen overflow-y-auto">
@@ -22,8 +19,14 @@ export default function GroupLayout({
       </div>
       
       {/* Main Content - Full width on mobile, partial width on desktop */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-16 md:pb-0">
+        {/* Mobile Header - Only visible on mobile */}
+        <MobileHeader />
+        
         {children}
+        
+        {/* Mobile Bottom Navigation - Only visible on mobile */}
+        <MobileBottomNav />
       </div>
     </div>
   );
