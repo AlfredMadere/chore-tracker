@@ -358,7 +358,7 @@ export default function GroupPage() {
                 <Link href={`/group/${groupId}/leaderboard`}>
                   <BarChart className="h-8 w-8 text-primary" />
                   <span className="font-medium">View Leaderboard</span>
-                  <span className="text-sm text-muted-foreground">See who's earned the most points</span>
+                  <span className="text-sm text-muted-foreground">See who's logged the most minutes</span>
                 </Link>
               </Button>
               

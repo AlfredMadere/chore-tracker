@@ -35,7 +35,7 @@ type Chore = {
 // Zod schema for chore form validation
 const choreSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  points: z.number().min(1, { message: "Points must be at least 1" }),
+  points: z.number().min(1, { message: "Minutes must be at least 1" }),
   description: z.string().default("")
 });
 
@@ -250,7 +250,7 @@ export default function EditChoresPage() {
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="points" className="text-right">
-                      Points
+                      Minutes
                     </Label>
                     <div className="col-span-3">
                       <Input
@@ -315,7 +315,7 @@ export default function EditChoresPage() {
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="edit-points" className="text-right">
-                      Points
+                      Minutes
                     </Label>
                     <div className="col-span-3">
                       <Input
@@ -379,7 +379,7 @@ export default function EditChoresPage() {
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="text-lg font-medium text-foreground truncate">{chore.name}</h3>
                     <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                      {chore.points} points
+                      {chore.points} mins
                     </span>
                   </div>
                   {chore.description && (

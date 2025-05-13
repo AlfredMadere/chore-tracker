@@ -35,7 +35,7 @@ export async function addChore(groupId: string, name: string, points: number, de
    
     // verify that we aren't making a duplicate chore
     const choreExists = await prisma.chore.findUnique({
-      where: { name: name.trim(), groupId: parseInt(groupId) }
+      where: { name_groupId: { name: name.trim(), groupId: parseInt(groupId) } }
     });
     
     if (choreExists) {

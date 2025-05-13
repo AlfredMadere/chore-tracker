@@ -9,10 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-type UserPoints = {
+type UserMinutes = {
   id: string;
   name: string;
-  points: number;
+  points: number; // Still using 'points' in the type but will display as minutes
 };
 
 export default function LeaderboardPage() {
@@ -30,13 +30,13 @@ export default function LeaderboardPage() {
     return sunday;
   };
 
-  // Use React Query to fetch points data
+  // Use React Query to fetch minutes data
   const { 
-    data: pointsData, 
+    data: minutesData, 
     isLoading,
     error
   } = useQuery({
-    queryKey: ["points", groupId, timeFrame],
+    queryKey: ["minutes", groupId, timeFrame],
     queryFn: async () => {
       // Set date filters based on selected time frame
       let startDate: Date | undefined;
@@ -49,7 +49,7 @@ export default function LeaderboardPage() {
       
       const result = await getPointsPerUser(groupId, startDate, endDate);
       if (!result.success) {
-        throw new Error(result.error || "Failed to load points data");
+        throw new Error(result.error || "Failed to load minutes data");
       }
       return result.data;
     }
@@ -100,10 +100,10 @@ export default function LeaderboardPage() {
             <CardTitle>Leaderboard</CardTitle>
           </CardHeader>
           <CardContent>
-            {!pointsData || pointsData.length === 0 ? (
+            {!minutesData || minutesData.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="bg-muted/30 rounded-lg p-8 max-w-md">
-                  <h3 className="text-lg font-medium mb-2">No points yet</h3>
+                  <h3 className="text-lg font-medium mb-2">No minutes logged yet</h3>
                   <p className="text-muted-foreground mb-6">
                     Start logging chores to see who's leading the scoreboard!
                   </p>
@@ -114,7 +114,7 @@ export default function LeaderboardPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {pointsData.map((user, index) => (
+                {minutesData.map((user, index) => (
                   <div 
                     key={user.id} 
                     className={`flex items-center justify-between p-4 rounded-lg border ${
@@ -138,7 +138,7 @@ export default function LeaderboardPage() {
                       </div>
                     </div>
                     <Badge variant="outline" className="bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary">
-                      {user.points} points
+                      {user.points} mins
                     </Badge>
                   </div>
                 ))}

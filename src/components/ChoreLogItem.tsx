@@ -156,7 +156,7 @@ export default function ChoreLogItem({ log, timeMarker, isNewDay }: ChoreLogItem
             
             <div className="flex items-center gap-2 ml-auto">
               <Badge variant="outline" className="bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400 hover:bg-green-500/10 hover:text-green-600 dark:hover:bg-green-500/20 dark:hover:text-green-400 whitespace-nowrap">
-                +{log.chore.points} points
+                +{log.chore.points} mins
               </Badge>
               {canDelete && (
                 <Button 

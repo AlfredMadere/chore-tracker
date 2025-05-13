@@ -105,7 +105,7 @@ export default function ChoreLogCard({ chore, isLogging, onClick }: ChoreLogCard
             variants={pointsVariants}
             className="text-xs font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full flex-shrink-0"
           >
-            +{chore.points}
+            +{chore.points} mins
           </motion.span>
         )}
       </div>
