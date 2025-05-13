@@ -14,7 +14,10 @@ export async function getChoresForGroup(groupId: string) {
     }
     
     const chores = await prisma.chore.findMany({
-      where: { groupId: id },
+      where: { 
+        groupId: id,
+        freeform: false // Exclude freeform chores
+      },
       orderBy: { name: 'asc' }
     });
     

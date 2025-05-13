@@ -31,6 +31,7 @@ model Chore {
   name        String     @unique
   points      Int
   description String     @default("")
+  freeform    Boolean    @default(false)
   group       Group      @relation(fields: [groupId], references: [id])
   groupId     Int
   ChoreLog    ChoreLog[]
@@ -42,6 +43,7 @@ model ChoreLog {
   user      User     @relation(fields: [userId], references: [id])
   group     Group    @relation(fields: [groupId], references: [id])
   createdAt DateTime @default(now())
+  usedTimer Boolean  @default(false)
   choreId   Int
   userId    String
   groupId   Int

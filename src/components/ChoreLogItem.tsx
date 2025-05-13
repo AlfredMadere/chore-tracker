@@ -29,6 +29,7 @@ type ChoreLog = {
     points: number;
     groupId: number;
     description?: string;
+    freeform?: boolean;
   };
   user: {
     id: string;
@@ -36,6 +37,7 @@ type ChoreLog = {
     name?: string | null;
     image?: string | null;
   };
+  usedTimer?: boolean;
 };
 
 type ChoreLogItemProps = {
@@ -128,7 +130,15 @@ export default function ChoreLogItem({ log, timeMarker, isNewDay }: ChoreLogItem
         <div className="space-y-3">
           {/* Chore name */}
           <h3 className="text-base font-medium leading-tight">
-            {log.chore.name}
+            {log.chore.freeform 
+              ? log.chore.name.split('__')[0] // Remove UUID from freeform chores
+              : log.chore.name
+            }
+            {log.chore.freeform && (
+              <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                (Freeform)
+              </span>
+            )}
           </h3>
           
           {/* User info and points */}

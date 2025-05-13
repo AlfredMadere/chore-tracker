@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 import { getChoresForGroup, logChore, deleteChoreLog } from "../log/actions";
+import { logFreeformChore } from "./actions";
 
 type Chore = {
   id: number;
@@ -26,6 +27,7 @@ type Chore = {
   points: number;
   groupId: number;
   description?: string;
+  freeform?: boolean;
 };
 
 export default function RecordPage() {
@@ -128,12 +130,51 @@ export default function RecordPage() {
   
   // Handle chore click
   const handleChoreClick = (choreId: number) => {
-    // Prevent multiple clicks
-    if (loggingChores.has(choreId)) return;
+    if (loggingChores.has(choreId)) {
+      return; // Prevent double-clicks
+    }
     
-    // Log the chore
     logChoreMutation.mutate(choreId);
   };
+  
+  // Alias for consistency with the JSX
+  const handleLogChore = handleChoreClick;
+  
+  // Mutation for logging a freeform chore
+  const logFreeformChoreMutation = useMutation({
+    mutationFn: async (data: { 
+      name: string; 
+      minutes: number; 
+      description?: string; 
+      timeWasEdited: boolean 
+    }) => {
+      const result = await logFreeformChore(
+        parseInt(groupId),
+        data.name,
+        data.minutes,
+        data.description,
+        data.timeWasEdited
+      );
+      
+      if (!result.success) {
+        throw new Error(result.error || "Failed to log freeform chore");
+      }
+      
+      return result.data;
+    },
+    onSuccess: (_, data) => {
+      toast.success(`Freeform chore logged: ${data.name}`, {
+        description: `${data.minutes} minute${data.minutes !== 1 ? 's' : ''} recorded`
+      });
+      
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: ["group", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["chores", groupId] });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Failed to log freeform chore");
+    }
+  });
   
   // Handle freeform chore submission
   const handleFreeformSubmit = (data: { 
@@ -142,13 +183,7 @@ export default function RecordPage() {
     description?: string; 
     timeWasEdited: boolean 
   }) => {
-    // This will be implemented later to handle freeform chore submission
-    toast.success("Freeform chore logged: " + data.name);
-    console.log("Freeform chore data:", data);
-    // The timeWasEdited flag will help us track whether the user manually edited the time
-    // or simply used the timer feature
-    console.log("Time was edited:", data.timeWasEdited ? "Yes" : "No");
-    // TODO: Implement server action for freeform chore logging
+    logFreeformChoreMutation.mutate(data);
   };
   
   if (isLoading) {
@@ -188,28 +223,28 @@ export default function RecordPage() {
           </Link>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-10">
-          {data.map((chore) => (
-            <Card 
-              key={chore.id}
-              className={cn(
-                "p-3 flex flex-col justify-between h-24 cursor-pointer transition-all",
-                "hover:shadow-md active:scale-95",
-                loggingChores.has(chore.id) && "bg-green-100 dark:bg-green-900/30"
-              )}
-              onClick={() => handleChoreClick(chore.id)}
-            >
-              <div className="flex justify-between items-start">
-                <h3 className="font-medium text-sm line-clamp-2">{chore.name}</h3>
-                {loggingChores.has(chore.id) ? (
-                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                ) : (
-                  <span className="text-xs font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full flex-shrink-0">
-                    +{chore.points}
-                  </span>
+          {data.map((chore) => {
+            // For freeform chores, remove the UUID suffix from display
+            const displayName = chore.freeform ? chore.name.split('__')[0] : chore.name;
+            
+            return (
+              <Card 
+                key={chore.id}
+                className={cn(
+                  "p-3 flex flex-col items-center justify-center gap-1 cursor-pointer transition-all",
+                  loggingChores.has(chore.id) ? "border-primary" : "hover:border-primary/50",
+                  chore.freeform ? "bg-primary/5" : ""
                 )}
-              </div>
-            </Card>
-          ))}
+                onClick={() => handleLogChore(chore.id)}
+              >
+                <h3 className="font-medium text-center text-sm">{displayName}</h3>
+                <p className="text-xs font-semibold">{chore.points} points</p>
+                {chore.freeform && (
+                  <span className="text-[10px] text-muted-foreground">Freeform</span>
+                )}
+              </Card>
+            );
+          })}
         </div>
       </div>
       
