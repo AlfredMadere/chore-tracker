@@ -49,7 +49,7 @@ export default function GroupPage() {
   } = useQuery({
     queryKey: ["group", groupId],
     queryFn: async () => {
-      const result = await getGroupById(groupId);
+      const result = await getGroupById(parseInt(groupId));
       if (!result.success) {
         throw new Error(result.error || "Failed to load group");
       }
