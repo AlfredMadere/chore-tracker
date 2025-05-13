@@ -26,8 +26,7 @@ type ChoreLog = {
 
 export default function ChoreTimelinePage() {
   const params = useParams();
-  const groupId = params.id as string;
-  const [choreLogs, setChoreLogs] = useState<ChoreLog[]>([]);
+  const groupId = parseInt(params.id as string);
 
   // Use React Query to fetch group data
   const { 
@@ -35,7 +34,7 @@ export default function ChoreTimelinePage() {
     isLoading,
     refetch
   } = useQuery({
-    queryKey: ["group", groupId, "timeline"],
+    queryKey: ["group", groupId],
     queryFn: async () => {
       const result = await getGroupById(groupId);
       if (!result.success) {
@@ -45,18 +44,7 @@ export default function ChoreTimelinePage() {
     }
   });
 
-  // Set chore logs when group data is available
-  useEffect(() => {
-    if (group) {
-      setChoreLogs(group.ChoreLog || []);
-    }
-  }, [group]);
 
-  // Handle chore log deletion
-  const handleChoreLogDeleted = (choreLogId: number) => {
-    setChoreLogs(prev => prev.filter(log => log.id !== choreLogId));
-    refetch(); // Refresh data
-  };
 
   if (isLoading) {
     return (
@@ -74,9 +62,8 @@ export default function ChoreTimelinePage() {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="grid grid-cols-1 gap-8">
         <ChoreLogList 
-          choreLogs={choreLogs} 
+          choreLogs={group?.ChoreLog || []} 
           maxHeight="800px" 
-          onChoreLogDeleted={handleChoreLogDeleted} 
         />
       </div>
     </div>

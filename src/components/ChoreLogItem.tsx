@@ -6,6 +6,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,14 +40,46 @@ type ChoreLog = {
 
 type ChoreLogItemProps = {
   log: ChoreLog;
-  canDelete: boolean;
-  onDelete: (id: number) => void;
   timeMarker: string;
   isNewDay: boolean;
 };
 
-export default function ChoreLogItem({ log, canDelete, onDelete, timeMarker, isNewDay }: ChoreLogItemProps) {
+export default function ChoreLogItem({ log, timeMarker, isNewDay }: ChoreLogItemProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+  
+  // Check if user can delete a log (if they created it)
+  const canDelete = session?.user?.email === log.user.email;
+  
+  // Delete chore log mutation
+  const deleteMutation = useMutation<
+    { success: boolean; error?: string },
+    Error,
+    number
+  >({
+    mutationFn: async (choreLogId: number) => {
+      const response = await fetch(`/api/chore-logs?id=${choreLogId}`, {
+        method: 'DELETE',
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete chore log');
+      }
+      return result;
+    },
+    onSuccess: () => {
+      toast.success("Chore unlogged successfully");
+      console.log("Invalidating group query", ["group", log.chore.groupId]);
+      queryClient.invalidateQueries({
+        queryKey: ["group", log.chore.groupId],
+      });
+    },
+    onError: (error) => {
+      toast.error("An error occurred while unlogging the chore");
+      console.error("Error unlogging chore:", error);
+    }
+  });
   
   // Get display name for user
   const getUserDisplayName = (user: { email: string; name?: string | null }) => {
@@ -58,7 +93,7 @@ export default function ChoreLogItem({ log, canDelete, onDelete, timeMarker, isN
   
   // Handle confirm delete
   const handleConfirmDelete = () => {
-    onDelete(log.id);
+    deleteMutation.mutate(log.id);
     setIsDeleteDialogOpen(false);
   };
   
@@ -98,6 +133,7 @@ export default function ChoreLogItem({ log, canDelete, onDelete, timeMarker, isN
                 className="h-8 w-8 flex-shrink-0 text-muted-foreground hover:text-destructive" 
                 onClick={handleDeleteClick}
                 title="Unlog this chore"
+                disabled={deleteMutation.isPending}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>

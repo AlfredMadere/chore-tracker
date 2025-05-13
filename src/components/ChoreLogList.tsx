@@ -1,13 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { format, isSameDay, parseISO, isToday, isYesterday } from "date-fns";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { deleteChoreLog } from "@/app/group/[id]/log/actions";
-import { useSession } from "next-auth/react";
+import { format, isSameDay, isToday, isYesterday } from "date-fns";
 import ChoreLogItem from "./ChoreLogItem";
 import { Calendar } from "lucide-react";
 
@@ -31,43 +27,10 @@ type ChoreLog = {
 type ChoreLogListProps = {
   choreLogs: ChoreLog[];
   maxHeight?: string;
-  onChoreLogDeleted?: (choreLogId: number) => void;
 };
 
-export default function ChoreLogList({ choreLogs, maxHeight = "400px", onChoreLogDeleted }: ChoreLogListProps) {
-  const { data: session } = useSession();
-  
-  // Delete chore log mutation
-  const deleteMutation = useMutation<
-    { success: boolean; error?: string },
-    Error,
-    number
-  >({
-    mutationFn: async (choreLogId: number) => {
-      const result = await deleteChoreLog(choreLogId);
-      return result;
-    },
-    onSuccess: (result, choreLogId) => {
-      if (result.success) {
-        toast.success("Chore unlogged successfully");
-        if (onChoreLogDeleted) {
-          onChoreLogDeleted(choreLogId);
-        }
-      } else {
-        toast.error(result.error || "Failed to unlog chore");
-      }
-    },
-    onError: (error) => {
-      toast.error("An error occurred while unlogging the chore");
-      console.error("Error unlogging chore:", error);
-    }
-  });
-  
-  // Check if user can delete a log (if they created it)
-  const canDeleteLog = (log: ChoreLog) => {
-    return session?.user?.email === log.user.email;
-  };
-  
+export default function ChoreLogList({ choreLogs, maxHeight = "400px" }: ChoreLogListProps) {
+  console.log("choreLogs", choreLogs);
   // Format the date for display
   const formatDate = (dateValue: string | Date) => {
     const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
@@ -109,10 +72,7 @@ export default function ChoreLogList({ choreLogs, maxHeight = "400px", onChoreLo
     }));
   }, [choreLogs]);
   
-  // Handle deleting a log
-  const handleDelete = (id: number) => {
-    deleteMutation.mutate(id);
-  };
+
   
   if (choreLogs.length === 0) {
     return (
@@ -160,8 +120,6 @@ export default function ChoreLogList({ choreLogs, maxHeight = "400px", onChoreLo
                 <ChoreLogItem
                   key={log.id}
                   log={log}
-                  canDelete={canDeleteLog(log)}
-                  onDelete={handleDelete}
                   timeMarker={formattedDate}
                   isNewDay={isNewDay}
                 />

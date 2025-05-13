@@ -5,16 +5,15 @@ import { auth } from "@/auth";
 import { success, failure, ActionResult } from "@/lib/utils";
 
 // Get group by ID with all related data
-export async function getGroupById(id: string) {
+export async function getGroupById(id: number) {
   try {
-    const groupId = parseInt(id);
     
-    if (isNaN(groupId)) {
+    if (isNaN(id)) {
       throw new Error("Invalid group ID");
     }
     
     const group = await prisma.group.findUnique({
-      where: { id: groupId },
+      where: { id },
       include: {
         userGroups: {
           include: {
