@@ -123,6 +123,12 @@ export default function ChoreLogList({ choreLogs}: ChoreLogListProps) {
 
   
   if (choreLogs.length === 0) {
+    // Extract groupId from URL if available
+    const groupId = typeof window !== 'undefined' ? 
+      window.location.pathname.split('/').find((segment, index, arr) => 
+        arr[index-1] === 'group' && segment !== 'timeline'
+      ) : null;
+
     return (
       <Card>
         <CardHeader>
@@ -138,12 +144,17 @@ export default function ChoreLogList({ choreLogs}: ChoreLogListProps) {
           <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
             <Calendar className="h-8 w-8 text-muted-foreground" />
           </div>
-          <p className="text-center text-muted-foreground">
-            No chores have been logged yet
+          <h3 className="text-lg font-medium mb-2">No activity yet</h3>
+          <p className="text-center text-muted-foreground max-w-md mb-6">
+            Your chore timeline will show a history of all completed chores in your group.
           </p>
-          <p className="text-center text-sm text-muted-foreground mt-1">
-            Complete a chore to see it in the timeline
-          </p>
+          {groupId && (
+            <div className="flex gap-4">
+              <a href={`/group/${groupId}/record`} className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 gap-2">
+                Record a Chore
+              </a>
+            </div>
+          )}
         </CardContent>
       </Card>
     );

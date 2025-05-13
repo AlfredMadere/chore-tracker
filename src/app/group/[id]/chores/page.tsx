@@ -362,8 +362,14 @@ export default function EditChoresPage() {
         
         {/* Chores Grid */}
         {chores.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">No chores have been added yet</p>
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="bg-muted/30 rounded-lg p-8 max-w-md">
+              <h3 className="text-lg font-medium mb-2">No chores yet</h3>
+              <p className="text-muted-foreground mb-6">Click the "Add Chore" button above to create your first chore.</p>
+              <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
+                <Plus className="h-4 w-4" /> Add Your First Chore
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

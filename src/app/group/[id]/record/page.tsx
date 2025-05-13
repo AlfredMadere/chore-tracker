@@ -206,8 +206,16 @@ export default function RecordPage() {
   
   if (!data || data.length === 0) {
     return (
-      <div className="p-4 text-center">
-        <p className="text-muted-foreground">No chores found for this group</p>
+      <div className="flex flex-col items-center justify-center p-6 h-[calc(100vh-8rem)] text-center">
+        <div className="bg-muted/30 rounded-lg p-8 max-w-md">
+          <h3 className="text-lg font-medium mb-2">No chores found</h3>
+          <p className="text-muted-foreground mb-6">Looks like you don't have any chores yet. Click the Edit button to add some.</p>
+          <Link href={`/group/${groupId}/chores/edit`}>
+            <Button className="gap-2">
+              <Edit className="h-4 w-4" /> Add Chores
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }

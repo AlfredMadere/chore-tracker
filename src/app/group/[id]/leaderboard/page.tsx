@@ -101,8 +101,16 @@ export default function LeaderboardPage() {
           </CardHeader>
           <CardContent>
             {!pointsData || pointsData.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">No points data available yet</p>
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="bg-muted/30 rounded-lg p-8 max-w-md">
+                  <h3 className="text-lg font-medium mb-2">No points yet</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Start logging chores to see who's leading the scoreboard!
+                  </p>
+                  <a href={`/group/${groupId}/record`} className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 gap-2">
+                    Record a Chore
+                  </a>
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
