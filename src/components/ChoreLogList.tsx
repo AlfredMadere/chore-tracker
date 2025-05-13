@@ -3,9 +3,10 @@
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { format, isSameDay, isToday, isYesterday } from "date-fns";
+import { format, isSameDay, isToday, isYesterday, startOfWeek, differenceInWeeks, addWeeks } from "date-fns";
 import ChoreLogItem from "./ChoreLogItem";
 import { Calendar } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 type ChoreLog = {
   id: number;
@@ -46,8 +47,45 @@ export default function ChoreLogList({ choreLogs, maxHeight = "400px" }: ChoreLo
     return format(date, "MMM d, yyyy 'at' h:mm a");
   };
   
+  // Format the day header
+  const formatDayHeader = (dateValue: string | Date) => {
+    const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+    const now = new Date();
+    const currentWeekStart = startOfWeek(now, { weekStartsOn: 0 }); // Sunday as week start
+    const dateWeekStart = startOfWeek(date, { weekStartsOn: 0 });
+    const weeksAgo = differenceInWeeks(currentWeekStart, dateWeekStart);
+    
+    if (isToday(date)) {
+      return `${format(date, "EEEE")} (Today)`;
+    }
+    
+    if (isYesterday(date)) {
+      return `${format(date, "EEEE")} (Yesterday)`;
+    }
+    
+    if (weeksAgo === 0) {
+      // This week
+      return format(date, "EEEE");
+    }
+    
+    if (weeksAgo === 1) {
+      // Last week
+      return `${format(date, "EEEE")} (Last Week)`;
+    }
+    
+    if (weeksAgo === 2) {
+      // Two weeks ago
+      return `${format(date, "EEEE")} (Two Weeks Ago)`;
+    }
+    
+    // More than two weeks ago
+    return format(date, "MMMM d, yyyy");
+  };
+  
   // Group logs by date for the timeline
   const groupedLogs = useMemo(() => {
+    if (choreLogs.length === 0) return [];
+    
     // Sort logs by date (newest first)
     const sortedLogs = [...choreLogs].sort((a, b) => {
       const dateA = new Date(a.createdAt);
@@ -55,21 +93,33 @@ export default function ChoreLogList({ choreLogs, maxHeight = "400px" }: ChoreLo
       return dateB.getTime() - dateA.getTime();
     });
     
-    // Track which logs start a new day
-    const newDayFlags = sortedLogs.map((log, index) => {
-      if (index === 0) return true;
+    // Group logs by day
+    const dayGroups: { date: Date; logs: typeof sortedLogs }[] = [];
+    let currentDay: Date | null = null;
+    let currentLogs: typeof sortedLogs = [];
+    
+    sortedLogs.forEach(log => {
+      const logDate = new Date(log.createdAt);
+      // Set time to midnight for comparison
+      const dayDate = new Date(logDate.getFullYear(), logDate.getMonth(), logDate.getDate());
       
-      const currentDate = new Date(log.createdAt);
-      const prevDate = new Date(sortedLogs[index - 1].createdAt);
-      
-      return !isSameDay(currentDate, prevDate);
+      if (!currentDay || !isSameDay(currentDay, dayDate)) {
+        if (currentDay && currentLogs.length > 0) {
+          dayGroups.push({ date: currentDay, logs: currentLogs });
+        }
+        currentDay = dayDate;
+        currentLogs = [log];
+      } else {
+        currentLogs.push(log);
+      }
     });
     
-    return sortedLogs.map((log, index) => ({
-      log,
-      isNewDay: newDayFlags[index],
-      formattedDate: formatDate(log.createdAt)
-    }));
+    // Add the last group
+    if (currentDay && currentLogs.length > 0) {
+      dayGroups.push({ date: currentDay, logs: currentLogs });
+    }
+    
+    return dayGroups;
   }, [choreLogs]);
   
 
@@ -114,16 +164,31 @@ export default function ChoreLogList({ choreLogs, maxHeight = "400px" }: ChoreLo
       </CardHeader>
       <CardContent className="p-0 sm:px-2">
         <ScrollArea className="w-full overflow-y-scroll" style={{ maxHeight }}>
-          <div className="flex flex-col gap-4">
-
-              {groupedLogs.map(({ log, isNewDay, formattedDate }) => (
-                <ChoreLogItem
-                  key={log.id}
-                  log={log}
-                  timeMarker={formattedDate}
-                  isNewDay={isNewDay}
-                />
-              ))}
+          <div className="flex flex-col gap-6">
+            {groupedLogs.map((group, groupIndex) => (
+              <div key={group.date.toISOString()} className="space-y-4">
+                {/* Day header with separator */}
+                <div className="flex items-center gap-3 sticky top-0 bg-background py-2 z-10">
+                  <div className="h-px flex-grow bg-border" />
+                  <h3 className="text-sm font-semibold text-foreground whitespace-nowrap px-2">
+                    {formatDayHeader(group.date)}
+                  </h3>
+                  <div className="h-px flex-grow bg-border" />
+                </div>
+                
+                {/* Logs for this day */}
+                <div className="space-y-4 pl-1">
+                  {group.logs.map(log => (
+                    <ChoreLogItem
+                      key={log.id}
+                      log={log}
+                      timeMarker={formatDate(log.createdAt)}
+                      isNewDay={false}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </ScrollArea>
       </CardContent>
