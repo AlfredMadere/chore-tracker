@@ -3,7 +3,7 @@
 import { useParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { ReactNode, useState } from 'react';
-import { Calendar, CheckCircle, Home, PencilLine, Menu, BarChart, Clock } from 'lucide-react';
+import { Calendar, CheckCircle, Home, PencilLine, Menu, BarChart, Clock, Settings } from 'lucide-react';
 import { UserCard } from './UserCard';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -44,22 +44,12 @@ export function GroupNavigationDesktop() {
   
   const navItems = [
     {
-      href: `/group/${groupId}/log`,
-      label: 'Log',
+      href: `/group/${groupId}/record`,
+      label: 'Record',
       icon: <CheckCircle className="h-5 w-5" />,
     },
     {
-      href: `/group/${groupId}`,
-      label: 'Home',
-      icon: <Home className="h-5 w-5" />,
-    },
-    {
-      href: `/group/${groupId}/chores`,
-      label: 'Edit Chores',
-      icon: <PencilLine className="h-5 w-5" />,
-    },
-    {
-      href: `/group/${groupId}/chore-timeline`,
+      href: `/group/${groupId}/timeline`,
       label: 'Timeline',
       icon: <Clock className="h-5 w-5" />,
     },
@@ -67,6 +57,11 @@ export function GroupNavigationDesktop() {
       href: `/group/${groupId}/leaderboard`,
       label: 'Leaderboard',
       icon: <BarChart className="h-5 w-5" />,
+    },
+    {
+      href: `/group/${groupId}/settings`,
+      label: 'Settings',
+      icon: <Settings className="h-5 w-5" />,
     },
   ];
 

@@ -5,29 +5,38 @@ import { prisma } from "@/lib/prisma";
 import { success, failure, ActionResult } from "@/lib/utils";
 
 // Get all chores for a group
-export async function getChoresForGroup(groupId: string) {
+// Define the type for a chore with log count
+type ChoreWithLogCount = {
+  id: number;
+  name: string;
+  points: number;
+  description: string;
+  freeform: boolean;
+  groupId: number;
+  log_count: bigint; // SQL count returns bigint
+};
+
+export async function getChoresForGroup(groupId: string): Promise<ActionResult<ChoreWithLogCount[]>> {
   try {
     const id = parseInt(groupId);
     
     if (isNaN(id)) {
-      throw new Error("Invalid group ID");
+      return failure(new Error("Invalid group ID"));
     }
     
-    const chores = await prisma.chore.findMany({
-      where: { 
-        groupId: id,
-        freeform: false // Exclude freeform chores
-      },
-      orderBy: { name: 'asc' }
-    });
-    
-    return { success: true, data: chores };
+    // Use raw SQL to get chores ordered by log count
+    const chores = await prisma.$queryRaw<ChoreWithLogCount[]>`
+      SELECT c.*, COUNT(cl.id) as log_count
+      FROM "Chore" c
+      LEFT JOIN "ChoreLog" cl ON c.id = cl."choreId"
+      WHERE c."groupId" = ${id} AND c.freeform = false
+      GROUP BY c.id
+      ORDER BY log_count DESC, c.name ASC
+    `;
+    return success(chores);
   } catch (error) {
     console.error("Error fetching chores:", error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : "Failed to fetch chores" 
-    };
+    return failure(error instanceof Error ? error.message : "Failed to fetch chores");
   }
 }
 

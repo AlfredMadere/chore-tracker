@@ -151,12 +151,11 @@ export default function ChoreLogList({ choreLogs}: ChoreLogListProps) {
   
   return (
     
-        <ScrollArea className="w-full overflow-y-scroll h-full min-h-0" >
           <div className="flex flex-col gap-6">
             {groupedLogs.map((group, groupIndex) => (
               <div key={group.date.toISOString()} className="space-y-4">
                 {/* Day header with separator */}
-                <div className="flex items-center gap-3 sticky top-0 bg-background py-2 z-10">
+                <div className="flex items-center gap-3 sticky top-14 sm:top-0 bg-background py-2 z-10 ">
                   <div className="h-px flex-grow bg-border" />
                   <h3 className="text-sm font-semibold text-foreground whitespace-nowrap px-2">
                     {formatDayHeader(group.date)}
@@ -178,7 +177,6 @@ export default function ChoreLogList({ choreLogs}: ChoreLogListProps) {
               </div>
             ))}
           </div>
-        </ScrollArea>
       
   );
 }
