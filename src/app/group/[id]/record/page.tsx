@@ -5,7 +5,8 @@ import { useParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
-import { CheckCircle, Loader2, Timer, Edit } from "lucide-react";
+import { Loader2, Timer, Edit } from "lucide-react";
+import ChoreLogCard from "@/components/ChoreLogCard";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import FreeformChoreEntry from "@/components/FreeformChoreEntry";
@@ -223,28 +224,14 @@ export default function RecordPage() {
           </Link>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-10">
-          {data.map((chore) => {
-            // For freeform chores, remove the UUID suffix from display
-            const displayName = chore.freeform ? chore.name.split('__')[0] : chore.name;
-            
-            return (
-              <Card 
-                key={chore.id}
-                className={cn(
-                  "p-3 flex flex-col items-center justify-center gap-1 cursor-pointer transition-all",
-                  loggingChores.has(chore.id) ? "border-primary" : "hover:border-primary/50",
-                  chore.freeform ? "bg-primary/5" : ""
-                )}
-                onClick={() => handleLogChore(chore.id)}
-              >
-                <h3 className="font-medium text-center text-sm">{displayName}</h3>
-                <p className="text-xs font-semibold">{chore.points} points</p>
-                {chore.freeform && (
-                  <span className="text-[10px] text-muted-foreground">Freeform</span>
-                )}
-              </Card>
-            );
-          })}
+          {data.map((chore) => (
+            <ChoreLogCard
+              key={chore.id}
+              chore={chore}
+              isLogging={loggingChores.has(chore.id)}
+              onClick={() => handleLogChore(chore.id)}
+            />
+          ))}
         </div>
       </div>
       
