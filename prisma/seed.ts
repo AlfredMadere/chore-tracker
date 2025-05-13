@@ -104,7 +104,183 @@ async function main() {
       }
     });
 
-    console.log('Successfully inserted 10 chore logs');
+    // Additional logs - Two weeks ago (more dates)
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-05-03T08:15:00.000Z') // Saturday two weeks ago
+      }
+    });
+
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-05-03T17:45:00.000Z') // Saturday two weeks ago, evening
+      }
+    });
+
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-05-02T10:30:00.000Z') // Friday two weeks ago
+      }
+    });
+
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-05-01T14:20:00.000Z') // Thursday two weeks ago
+      }
+    });
+
+    // Three weeks ago
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-04-27T09:10:00.000Z') // Sunday three weeks ago
+      }
+    });
+
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-04-25T16:05:00.000Z') // Friday three weeks ago
+      }
+    });
+
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-04-24T11:30:00.000Z') // Thursday three weeks ago
+      }
+    });
+
+    // Four weeks ago
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-04-20T13:45:00.000Z') // Sunday four weeks ago
+      }
+    });
+
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-04-19T18:30:00.000Z') // Saturday four weeks ago
+      }
+    });
+
+    // More logs in April (over a month ago)
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-04-15T09:20:00.000Z') // Mid-April
+      }
+    });
+
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-04-12T14:15:00.000Z') // Early-April
+      }
+    });
+
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-04-10T11:45:00.000Z') // Early-April
+      }
+    });
+
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-04-08T16:30:00.000Z') // Early-April
+      }
+    });
+
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-04-05T10:15:00.000Z') // Early-April
+      }
+    });
+
+    // March logs (over a month ago)
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-03-30T13:10:00.000Z') // End of March
+      }
+    });
+
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-03-25T09:45:00.000Z') // Late March
+      }
+    });
+
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-03-20T15:30:00.000Z') // Mid-March
+      }
+    });
+
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-03-15T11:20:00.000Z') // Mid-March
+      }
+    });
+
+    await prisma.choreLog.create({
+      data: {
+        choreId: 2,
+        userId: 'cmala5ug40000xesm6h4ut8zz',
+        groupId: 1,
+        createdAt: new Date('2025-03-10T14:05:00.000Z') // Early March
+      }
+    });
+
+    console.log('Successfully inserted 30 chore logs');
   } catch (error) {
     console.error('Error inserting chore logs:', error);
     process.exit(1);

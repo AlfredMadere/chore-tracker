@@ -61,7 +61,6 @@ export default function ChoreTimelinePage() {
       <div className="grid grid-cols-1 gap-8">
         <ChoreLogList 
           choreLogs={group?.ChoreLog || []} 
-          maxHeight="800px" 
         />
       </div>
     </div>

@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "check:prisma": "tsx scripts/check_prisma_connection.ts",
-    "build": "pnpm check:prisma && prisma generate && next build --no-lint",
+    "build": " prisma generate && next build --no-lint",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",

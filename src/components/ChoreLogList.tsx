@@ -27,11 +27,9 @@ type ChoreLog = {
 
 type ChoreLogListProps = {
   choreLogs: ChoreLog[];
-  maxHeight?: string;
 };
 
-export default function ChoreLogList({ choreLogs, maxHeight = "400px" }: ChoreLogListProps) {
-  console.log("choreLogs", choreLogs);
+export default function ChoreLogList({ choreLogs}: ChoreLogListProps) {
   // Format the date for display
   const formatDate = (dateValue: string | Date) => {
     const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
@@ -152,18 +150,8 @@ export default function ChoreLogList({ choreLogs, maxHeight = "400px" }: ChoreLo
   }
   
   return (
-    <Card className="border-0 shadow-none md:border md:shadow ">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-5 w-5" />
-          Chore Timeline
-        </CardTitle>
-        <CardDescription>
-          Track when chores are completed
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-0 sm:px-2">
-        <ScrollArea className="w-full overflow-y-scroll" style={{ maxHeight }}>
+    
+        <ScrollArea className="w-full overflow-y-scroll h-full min-h-0" >
           <div className="flex flex-col gap-6">
             {groupedLogs.map((group, groupIndex) => (
               <div key={group.date.toISOString()} className="space-y-4">
@@ -191,7 +179,6 @@ export default function ChoreLogList({ choreLogs, maxHeight = "400px" }: ChoreLo
             ))}
           </div>
         </ScrollArea>
-      </CardContent>
-    </Card>
+      
   );
 }

@@ -25,7 +25,6 @@ export async function getUserGroups() {
     if (!userWithGroups) {
       return { success: false, error: "User not found", data: null };
     }
-    console.log(userWithGroups);
     return { 
       success: true, 
       data: userWithGroups?.userGroups?.map((group) => group.group) || []
