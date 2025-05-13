@@ -1,11 +1,21 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Timer, Play, Square, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const freeformChoreSchema = z.object({
+  choreName: z.string().min(1, "Chore name is required"),
+  description: z.string().optional(),
+});
+
+type FreeformChoreFormValues = z.infer<typeof freeformChoreSchema>;
 
 type FreeformChoreEntryProps = {
   groupId: string;
@@ -18,17 +28,26 @@ type FreeformChoreEntryProps = {
 };
 
 export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreEntryProps) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+    reset: resetForm,
+  } = useForm<FreeformChoreFormValues>({
+    resolver: zodResolver(freeformChoreSchema),
+    mode: "onChange",
+    defaultValues: {
+      choreName: "",
+      description: "",
+    },
+  });
+
   // State for timer
   const [isRunning, setIsRunning] = useState(false);
-  const [seconds, setSeconds] = useState(0);
-  const [minutes, setMinutes] = useState(0);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedMinutes, setEditedMinutes] = useState("");
+  const [displaySeconds, setDisplaySeconds] = useState(0);
+  const [displayMinutes, setDisplayMinutes] = useState(0);
+  const [editingTime, setEditingTime] = useState<{ minutes: string; seconds: string } | null>(null);
   const [timeWasEdited, setTimeWasEdited] = useState(false);
-  
-  // State for chore details
-  const [choreName, setChoreName] = useState("");
-  const [description, setDescription] = useState("");
   
   // Timer interval ref
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -38,11 +57,11 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
     if (isRunning) return;
     
     setIsRunning(true);
-    setIsEditing(false); // Exit editing mode if active
+    setEditingTime(null); // Exit editing mode if active
     timerRef.current = setInterval(() => {
-      setSeconds(prev => {
+      setDisplaySeconds(prev => {
         if (prev === 59) {
-          setMinutes(m => m + 1);
+          setDisplayMinutes(m => m + 1);
           return 0;
         }
         return prev + 1;
@@ -61,9 +80,10 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
     }
     
     // Populate the edit form with current timer values
-    setEditedMinutes(String(minutes));
-    setEditedSeconds(String(seconds));
-    setIsEditing(true);
+    setEditingTime({
+      minutes: String(displayMinutes),
+      seconds: String(displaySeconds)
+    });
   };
   
   // Clean up interval on unmount
@@ -75,70 +95,71 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
     };
   }, []);
   
-  // Handle manual minutes update
-  const handleMinutesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    // Only allow numbers
-    if (/^\d*$/.test(value)) {
-      setEditedMinutes(value);
-    }
-  };
-  
-  // Handle manual seconds update
-  const [editedSeconds, setEditedSeconds] = useState("");
-  
-  const handleSecondsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    // Only allow numbers 0-59
-    if (/^\d*$/.test(value) && (parseInt(value) < 60 || value === "")) {
-      setEditedSeconds(value);
-    }
+  // Handle time value changes (minutes or seconds)
+  const handleTimeValueChange = (field: 'minutes' | 'seconds', value: string) => {
+    setEditingTime(prev => {
+      if (!prev) return null;
+      
+      // Validate input
+      if (field === 'minutes' && !/^\d*$/.test(value)) {
+        return prev;
+      }
+      
+      if (field === 'seconds' && (!/^\d*$/.test(value) || (value !== "" && parseInt(value) >= 60))) {
+        return prev;
+      }
+      
+      return { ...prev, [field]: value };
+    });
   };
   
   const confirmTimeEdit = () => {
-    const newMinutes = parseInt(editedMinutes);
-    const newSeconds = parseInt(editedSeconds);
+    if (!editingTime) return;
+    
+    const newMinutes = parseInt(editingTime.minutes);
+    const newSeconds = parseInt(editingTime.seconds);
     
     if (!isNaN(newMinutes)) {
-      setMinutes(newMinutes);
+      setDisplayMinutes(newMinutes);
       setTimeWasEdited(true);
     }
     
     if (!isNaN(newSeconds)) {
-      setSeconds(newSeconds);
+      setDisplaySeconds(newSeconds);
       setTimeWasEdited(true);
     }
     
-    setIsEditing(false);
+    setEditingTime(null);
   };
   
-  const handleSubmit = () => {
-    if (!choreName.trim()) {
-      return; // Require a name
-    }
-    
+  const onFormSubmit = (data: FreeformChoreFormValues) => {
     onSubmit({
-      name: choreName.trim(),
-      minutes: minutes,
-      description: description.trim() || undefined,
+      name: data.choreName.trim(),
+      minutes: displayMinutes,
+      description: data.description?.trim() || undefined,
       timeWasEdited: timeWasEdited
     });
     
     // Reset form
-    setChoreName("");
-    setDescription("");
-    setMinutes(0);
-    setSeconds(0);
-    setIsEditing(false);
-    setEditedMinutes("");
-    setEditedSeconds("");
+    resetForm();
+    setDisplayMinutes(0);
+    setDisplaySeconds(0);
+    setEditingTime(null);
     setTimeWasEdited(false);
+    
+    // Make sure timer is stopped
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setIsRunning(false);
   };
   
-  const canSubmit = choreName.trim() !== "" && (minutes > 0 || (isEditing && editedMinutes.trim() !== ""));
+  const canSubmit = isValid && (displayMinutes > 0 || displaySeconds > 0 || 
+    (editingTime && (editingTime.minutes.trim() !== "" || editingTime.seconds.trim() !== "")));
   
   return (
-    <div className="border-t-2 border-t-primary bg-background shadow-sm rounded-md">
+    <form onSubmit={handleSubmit(onFormSubmit)} className="border-t-2 border-t-primary bg-background shadow-sm rounded-md">
       <div className="p-2">
         <div className="flex flex-col space-y-1.5">
           {/* Timer Display */}
@@ -149,26 +170,31 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
             </div>
             
             <div className="flex items-center space-x-1">
-              {isEditing ? (
+              {editingTime ? (
                 <div className="flex items-center">
                   <Input
-                    value={editedMinutes}
-                    onChange={handleMinutesChange}
+                    value={editingTime.minutes}
+                    onChange={(e) => handleTimeValueChange('minutes', e.target.value)}
                     className="w-10 h-6 text-xs px-2"
                     placeholder="Min"
+                    aria-label="Edit minutes"
+                    type="text"
                   />
                   <span className="text-xs mx-0.5">:</span>
                   <Input
-                    value={editedSeconds}
-                    onChange={handleSecondsChange}
+                    value={editingTime.seconds}
+                    onChange={(e) => handleTimeValueChange('seconds', e.target.value)}
                     className="w-10 h-6 text-xs px-2"
                     placeholder="Sec"
+                    aria-label="Edit seconds"
+                    type="text"
                   />
                   <Button 
                     size="icon" 
                     variant="ghost" 
                     className="h-6 w-6 p-0 ml-1" 
                     onClick={confirmTimeEdit}
+                    type="button"
                   >
                     <Check className="h-3 w-3" />
                   </Button>
@@ -177,19 +203,21 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
                 <>
                   {!isRunning ? (
                     <button 
+                      type="button"
                       className="text-xs font-mono cursor-pointer hover:text-primary transition-colors"
                       onClick={() => {
                         // Prefill with current timer values
-                        setEditedMinutes(String(minutes));
-                        setEditedSeconds(String(seconds));
-                        setIsEditing(true);
+                        setEditingTime({
+                          minutes: String(displayMinutes),
+                          seconds: String(displaySeconds)
+                        });
                       }}
                     >
-                      {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+                      {String(displayMinutes).padStart(2, '0')}:{String(displaySeconds).padStart(2, '0')}
                     </button>
                   ) : (
                     <span className="text-xs font-mono">
-                      {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+                      {String(displayMinutes).padStart(2, '0')}:{String(displaySeconds).padStart(2, '0')}
                     </span>
                   )}
                 </>
@@ -200,18 +228,20 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
           {/* Name Input */}
           <div className="flex items-center gap-1">
             <Input
-              value={choreName}
-              onChange={(e) => setChoreName(e.target.value)}
+              {...register("choreName")}
               placeholder="Unnamed Chore"
-              className="h-7 text-xs px-2"
+              className={cn("h-7 text-xs px-2", errors.choreName && "border-destructive")}
+              aria-label="Chore name"
             />
           </div>
+          {errors.choreName && (
+            <p className="text-xs text-destructive -mt-1">{errors.choreName.message}</p>
+          )}
           
           {/* Description Input */}
           <div className="flex items-center gap-1">
             <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              {...register("description")}
               placeholder="Description (optional)"
               className="text-xs px-2 py-1 min-h-[60px] resize-none"
             />
@@ -227,6 +257,7 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
                   size="sm" 
                   className="h-7 px-2 py-0 text-xs"
                   onClick={stopTimer}
+                  type="button"
                 >
                   <Square className="h-3 w-3 mr-1" /> Stop
                 </Button>
@@ -236,10 +267,11 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
                   size="sm" 
                   className="h-7 px-2 py-0 text-xs"
                   onClick={startTimer}
-                  disabled={isEditing}
+                  disabled={!!editingTime}
+                  type="button"
                 >
                   <Play className="h-3 w-3 mr-1" /> 
-                  {minutes > 0 || seconds > 0 ? "Resume" : "Start"}
+                  {displayMinutes > 0 || displaySeconds > 0 ? "Resume" : "Start"}
                 </Button>
               )}
               
@@ -248,7 +280,7 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
                 size="sm"
                 className="h-7 px-2 py-0 text-xs"
                 disabled={!canSubmit}
-                onClick={handleSubmit}
+                type="submit"
               >
                 Save
               </Button>
@@ -256,6 +288,6 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
           </div>
         </div>
       </div>
-    </div>
+    </form>
   );
 }
