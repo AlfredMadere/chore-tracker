@@ -28,13 +28,15 @@ model Group {
 
 model Chore {
   id          Int        @id @default(autoincrement())
-  name        String     @unique
+  name        String
   points      Int
   description String     @default("")
   freeform    Boolean    @default(false)
   group       Group      @relation(fields: [groupId], references: [id])
   groupId     Int
   ChoreLog    ChoreLog[]
+  
+  @@unique([name, groupId])
 }
 
 model ChoreLog {
