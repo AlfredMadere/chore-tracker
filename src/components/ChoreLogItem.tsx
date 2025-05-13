@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Calendar, Clock } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
@@ -81,9 +81,20 @@ export default function ChoreLogItem({ log, timeMarker, isNewDay }: ChoreLogItem
     }
   });
   
-  // Get display name for user
-  const getUserDisplayName = (user: { email: string; name?: string | null }) => {
-    return user.name || user.email.split('@')[0];
+  // Get formatted name for user (first name + last initial)
+  const getFormattedName = (user: { email: string; name?: string | null }) => {
+    if (!user.name) {
+      return user.email.split('@')[0];
+    }
+    
+    const nameParts = user.name.trim().split(' ');
+    if (nameParts.length === 1) {
+      return nameParts[0];
+    }
+    
+    const firstName = nameParts[0];
+    const lastInitial = nameParts[nameParts.length - 1][0];
+    return `${firstName} ${lastInitial}.`;
   };
   
   // Handle delete button click
@@ -101,44 +112,57 @@ export default function ChoreLogItem({ log, timeMarker, isNewDay }: ChoreLogItem
     <div className="">
       {/* Content */}
       <div className="bg-card border border-border rounded-lg p-4 shadow-sm w-full overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-          <div className="flex items-start space-x-3 min-w-0">
-            <Avatar className="flex-shrink-0">
-              <AvatarFallback className="bg-primary/10 text-primary">
-                {getUserDisplayName(log.user).charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+        {/* Date and time header */}
+        <div className="flex items-center justify-between mb-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <Calendar className="h-3.5 w-3.5" />
+            <span>{format(new Date(log.createdAt), 'MMM d, yyyy')}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5" />
+            <span>{format(new Date(log.createdAt), 'h:mm a')}</span>
+          </div>
+        </div>
+        
+        {/* Main content */}
+        <div className="space-y-3">
+          {/* Chore name */}
+          <h3 className="text-base font-medium leading-tight">
+            {log.chore.name}
+          </h3>
+          
+          {/* User info and points */}
+          <div className="flex flex-wrap items-center justify-between gap-y-2 gap-x-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <Avatar className="h-6 w-6 flex-shrink-0">
+                <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                  {getFormattedName(log.user).charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm text-muted-foreground truncate">
+                by {getFormattedName(log.user)}
+              </span>
+            </div>
             
-            <div className="min-w-0 flex-1">
-              <p className="font-medium text-foreground truncate">
-                <span className="font-semibold">{getUserDisplayName(log.user)}</span> completed{" "}
-                <span className="font-semibold">{log.chore.name}</span>
-              </p>
-              {log.chore.description && (
-                <p className="text-sm text-muted-foreground mt-1 line-clamp-2 break-words">
-                  {log.chore.description}
-                </p>
+            <div className="flex items-center gap-2 ml-auto">
+              <Badge variant="outline" className="bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400 hover:bg-green-500/10 hover:text-green-600 dark:hover:bg-green-500/20 dark:hover:text-green-400 whitespace-nowrap">
+                +{log.chore.points} points
+              </Badge>
+              {canDelete && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-7 w-7 flex-shrink-0 text-muted-foreground hover:text-destructive" 
+                  onClick={handleDeleteClick}
+                  title="Unlog this chore"
+                  disabled={deleteMutation.isPending}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
               )}
             </div>
           </div>
-          
-          <div className="flex items-center gap-2 mt-2 sm:mt-0 justify-end">
-            <Badge variant="outline" className="bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400 hover:bg-green-500/10 hover:text-green-600 dark:hover:bg-green-500/20 dark:hover:text-green-400 whitespace-nowrap">
-              +{log.chore.points} points
-            </Badge>
-            {canDelete && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8 flex-shrink-0 text-muted-foreground hover:text-destructive" 
-                onClick={handleDeleteClick}
-                title="Unlog this chore"
-                disabled={deleteMutation.isPending}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
+     
         </div>
       </div>
       
