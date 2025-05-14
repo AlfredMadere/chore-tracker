@@ -239,7 +239,7 @@ export default function FreeformChoreEntry({ groupId, onSubmit }: FreeformChoreE
           <div className="flex items-center gap-1">
             <Input
               {...register("choreName")}
-              placeholder="Unnamed Chore"
+              placeholder="Chore Name"
               className={cn("h-9 sm:h-7 text-base sm:text-xs px-3 sm:px-2", errors.choreName && "border-destructive")}
               aria-label="Chore name"
               autoComplete="off"
