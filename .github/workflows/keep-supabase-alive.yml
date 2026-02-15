@@ -1,0 +1,13 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    - cron: '0 0 * * 0,5'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Database
+        run: psql "${{ secrets.POSTGRES_URL_NON_POOLING }}" -c "SELECT 1"
