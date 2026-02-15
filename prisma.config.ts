@@ -1,10 +1,10 @@
 import "dotenv/config";
-import { defineConfig, env } from "prisma/config";
+import { defineConfig } from "prisma/config";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
   datasource: {
-    url: env("POSTGRES_URL_NON_POOLING"),
+    url: process.env.POSTGRES_URL_NON_POOLING ?? "",
   },
   migrations: {
     seed: "tsx prisma/seed.ts",
