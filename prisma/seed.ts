@@ -1,7 +1,11 @@
-import { PrismaClient } from "../src/generated/prisma";
+import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 // Initialize Prisma client for seeding using the same pattern as the app
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({
+  connectionString: process.env.NO_PREPARED_STATEMENTS_PRISMA_DATABASE_URL,
+});
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   try {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Chore as PrismaChore } from "@/generated/prisma";
+import { Chore as PrismaChore } from "@/generated/prisma/client";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getChoresForGroup, logChore } from "./actions";
