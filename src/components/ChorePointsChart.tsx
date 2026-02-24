@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CHART_WEEKS_TO_SHOW } from "@/lib/constants";
 
 type UserPoints = {
   id: string;
@@ -35,12 +36,12 @@ export default function ChorePointsChart({ groupId, getPointsPerUser, timeFrame 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   
-  // Function to get the start of the current week (Sunday at 00:00:00)
-  const getStartOfWeek = () => {
+  // Get the start date for the configured number of weeks back (Sunday at 00:00:00)
+  const getStartDate = () => {
     const now = new Date();
     const day = now.getDay(); // 0 is Sunday, 1 is Monday, etc.
     const sunday = new Date(now);
-    sunday.setDate(now.getDate() - day);
+    sunday.setDate(now.getDate() - day - (CHART_WEEKS_TO_SHOW - 1) * 7);
     sunday.setHours(0, 0, 0, 0);
     return sunday;
   };
@@ -57,7 +58,7 @@ export default function ChorePointsChart({ groupId, getPointsPerUser, timeFrame 
         let endDate: Date | undefined;
         
         if (timeFrame === "week") {
-          startDate = getStartOfWeek();
+          startDate = getStartDate();
           endDate = new Date(); // Current time
         }
         

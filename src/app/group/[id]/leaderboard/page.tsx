@@ -8,6 +8,7 @@ import ChorePointsChart from "@/components/ChorePointsChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CHART_WEEKS_TO_SHOW } from "@/lib/constants";
 
 type UserMinutes = {
   id: string;
@@ -20,12 +21,12 @@ export default function LeaderboardPage() {
   const groupId = params.id as string;
   const [timeFrame, setTimeFrame] = useState<"week" | "all">("week");
 
-  // Function to get the start of the current week (Sunday at 00:00:00)
-  const getStartOfWeek = () => {
+  // Get the start date for the configured number of weeks back (Sunday at 00:00:00)
+  const getStartDate = () => {
     const now = new Date();
     const day = now.getDay(); // 0 is Sunday, 1 is Monday, etc.
     const sunday = new Date(now);
-    sunday.setDate(now.getDate() - day);
+    sunday.setDate(now.getDate() - day - (CHART_WEEKS_TO_SHOW - 1) * 7);
     sunday.setHours(0, 0, 0, 0);
     return sunday;
   };
@@ -43,7 +44,7 @@ export default function LeaderboardPage() {
       let endDate: Date | undefined;
       
       if (timeFrame === "week") {
-        startDate = getStartOfWeek();
+        startDate = getStartDate();
         endDate = new Date(); // Current time
       }
       
@@ -86,7 +87,7 @@ export default function LeaderboardPage() {
         <Tabs defaultValue="week" value={timeFrame} onValueChange={(value) => setTimeFrame(value as "week" | "all")}>
           <TabsList>
             <TabsTrigger value="all">All Time</TabsTrigger>
-            <TabsTrigger value="week">This Week</TabsTrigger>
+            <TabsTrigger value="week">{CHART_WEEKS_TO_SHOW === 1 ? "This Week" : `Last ${CHART_WEEKS_TO_SHOW} Weeks`}</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
