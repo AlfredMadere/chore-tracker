@@ -36,14 +36,25 @@ export default function ChorePointsChart({ groupId, getPointsPerUser, timeFrame 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   
-  // Get the start date for the configured number of weeks back (Sunday at 00:00:00)
+  // Get the start of the current fixed-length chore period (aligned to CHART_WEEKS_TO_SHOW)
   const getStartDate = () => {
     const now = new Date();
-    const day = now.getDay(); // 0 is Sunday, 1 is Monday, etc.
-    const sunday = new Date(now);
-    sunday.setDate(now.getDate() - day - (CHART_WEEKS_TO_SHOW - 1) * 7);
-    sunday.setHours(0, 0, 0, 0);
-    return sunday;
+    const day = now.getDay(); // 0 is Sunday
+    const thisSunday = new Date(now);
+    thisSunday.setDate(now.getDate() - day);
+    thisSunday.setHours(0, 0, 0, 0);
+
+    // Align to fixed periods using a reference epoch Sunday
+    const epoch = new Date(2024, 0, 7); // Jan 7, 2024 (a Sunday)
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const weeksSinceEpoch = Math.floor(
+      Math.round((thisSunday.getTime() - epoch.getTime()) / msPerDay) / 7
+    );
+    const weeksIntoPeriod = weeksSinceEpoch % CHART_WEEKS_TO_SHOW;
+
+    const startDate = new Date(thisSunday);
+    startDate.setDate(thisSunday.getDate() - weeksIntoPeriod * 7);
+    return startDate;
   };
 
   // Colors for the bars
