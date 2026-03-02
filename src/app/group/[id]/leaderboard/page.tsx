@@ -94,13 +94,24 @@ export default function LeaderboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-end mb-4">
+      <div className="flex flex-col items-end mb-4">
         <Tabs defaultValue="week" value={timeFrame} onValueChange={(value) => setTimeFrame(value as "week" | "all")}>
           <TabsList>
             <TabsTrigger value="all">All Time</TabsTrigger>
-            <TabsTrigger value="week">{CHART_WEEKS_TO_SHOW === 1 ? "This Week" : `Last ${CHART_WEEKS_TO_SHOW} Weeks`}</TabsTrigger>
+            <TabsTrigger value="week">This Period</TabsTrigger>
           </TabsList>
         </Tabs>
+        {timeFrame === "week" && (() => {
+          const start = getStartDate();
+          const end = new Date(start);
+          end.setDate(start.getDate() + CHART_WEEKS_TO_SHOW * 7 - 1);
+          const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+          return (
+            <p className="text-xs text-muted-foreground mt-1">
+              {fmt(start)} – {fmt(end)} ({CHART_WEEKS_TO_SHOW} weeks)
+            </p>
+          );
+        })()}
       </div>
       <div className="grid grid-cols-1 gap-8">
         {/* Chart View */}
